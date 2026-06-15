@@ -1,0 +1,42 @@
+name: Banimal Care Loop Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-worker:
+    runs-on: ubuntu-latest
+    name: Deploy Cloudflare Worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy banimal-router Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          cd workers/banimal-router
+          wrangler deploy
+
+  notify-zoho:
+    runs-on: ubuntu-latest
+    name: Notify Zoho CRM on Deploy
+    needs: deploy-worker
+    steps:
+      - name: Post deploy note to Zoho CRM
+        env:
+          ZOHO_CRM_TOKEN: ${{ secrets.ZOHO_CRM_TOKEN }}
+        run: |
+          curl -X POST https://www.zohoapis.com/crm/v2/Notes \
+            -H "Authorization: Zoho-oauthtoken $ZOHO_CRM_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"data":[{"Note_Title":"Banimal Deploy","Note_Content":"Care Loop deployed successfully from GitHub Actions."}]}'
