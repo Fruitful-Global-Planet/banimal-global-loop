@@ -17,7 +17,15 @@
         { "color": "Sage Green", "stock": 0 },
         { "color": "Stone White", "stock": 0 }
       ],
-      "images": [],
+      "images": [
+          {
+            "url": "https://drive.google.com/thumbnail?id=14SoHG_34k69hCA1pe8eIO5eOmVzcbaR4&sz=w1200",
+            "alt": "Banimal Premium Stroller - Midnight Black, front and side view",
+            "source": "google_drive",
+            "drive_file_id": "14SoHG_34k69hCA1pe8eIO5eOmVzcbaR4",
+            "primary": true
+          }
+        ],
       "paystack_product_id": "2576183",
       "paystack_payment_link": "https://paystack.com/buy/banimal-premium-stroller-gs-k8-ycfsaj",
       "paystack_slug": "banimal-premium-stroller-gs-k8-ycfsaj",
@@ -25,7 +33,7 @@
         "south_africa": { "fee_zar": 150, "carrier": "TBD" }
       },
       "zoho_product_id": null,
-      "status": "pre-launch"
+              "status": "active"
     }
   ]
 }
