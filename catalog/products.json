@@ -18,7 +18,12 @@
         { "color": "Stone White", "stock": 0 }
       ],
       "images": [],
-      "paystack_plan_id": null,
+      "paystack_product_id": "2576183",
+      "paystack_payment_link": "https://paystack.com/buy/banimal-premium-stroller-gs-k8-ycfsaj",
+      "paystack_slug": "banimal-premium-stroller-gs-k8-ycfsaj",
+      "delivery": {
+        "south_africa": { "fee_zar": 150, "carrier": "TBD" }
+      },
       "zoho_product_id": null,
       "status": "pre-launch"
     }
