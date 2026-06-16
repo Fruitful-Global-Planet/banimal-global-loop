@@ -7,6 +7,7 @@ on:
     paths:
       - 'workers/seedwave-router/**'
 
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
