@@ -49,7 +49,7 @@ jobs:
       - name: Save existing dist/ defaults
         run: |
           mkdir -p _defaults
-          for f in sw.js manifest.json robots.txt sitemap.xml og-image.png; do
+          for f in sw.js manifest.json robots.txt sitemap.xml og-image.png bib.html; do
             [ -f "dist/$f" ] && cp "dist/$f" "_defaults/$f" || true
           done
 
@@ -71,7 +71,7 @@ jobs:
 
       - name: Restore dist/ defaults for any files not in ZIP
         run: |
-          for f in sw.js manifest.json robots.txt sitemap.xml og-image.png; do
+          for f in sw.js manifest.json robots.txt sitemap.xml og-image.png bib.html; do
             if [ ! -f "dist/$f" ] && [ -f "_defaults/$f" ]; then
               cp "_defaults/$f" "dist/$f"
               echo "Restored: dist/$f"
@@ -139,7 +139,7 @@ jobs:
             "outputDirectory": "dist",
             "rewrites": [
               {
-                "source": "/((?!api|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
+                "source": "/((?!api|bib|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
                 "destination": "/index.html"
               }
             ],
