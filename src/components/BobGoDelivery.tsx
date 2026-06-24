@@ -12,7 +12,7 @@ interface Props {
   onSelect: (rate: Rate) => void
 }
 
-const API = 'https://banimal.co.za/api/delivery'
+const API = (import.meta.env.VITE_DELIVERY_API_URL as string) || 'https://banimal.co.za/api/delivery'
 
 export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
   const [address, setAddress] = useState('')
