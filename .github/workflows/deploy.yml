@@ -3,6 +3,9 @@ name: Banimal Care Loop Deploy
 on:
   push:
     branches: [main]
+    paths:
+      - 'workers/banimal-router/**'
+  workflow_dispatch:
 
 jobs:
   deploy-worker:
@@ -24,6 +27,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
+          # Create wrangler.toml if not present (safe to run even when it exists)
+          if [ ! -f workers/banimal-router/wrangler.toml ]; then
+            cat > workers/banimal-router/wrangler.toml << 'TOML'
+          name            = "banimal-router"
+          main            = "index.js"
+          compatibility_date = "2024-09-23"
+          TOML
+          fi
           cd workers/banimal-router
           wrangler deploy
 
