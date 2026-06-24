@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Heart } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -7,6 +6,7 @@ import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 
 const FEATURED: Product[] = [
   { id: 'BT001', name: 'Classic White Babygrow 0–3m', price: 289, image: 'https://banimal.co.za/assets/BT001-BYDvu1g2.png', category: 'Babygrow', sizes: ['0–3m'], isNew: false },
@@ -16,11 +16,9 @@ const FEATURED: Product[] = [
 ]
 
 export default function Home() {
-  const [cart, setCart] = useState<Product[]>([])
   const { getHotItems, getColdItems } = useAnalytics()
   const { openAuth, user } = useAuth()
-
-  const addToCart = (p: Product) => setCart((prev) => [...prev, p])
+  const { addItem } = useCart()
 
   const hotIds = getHotItems()
   const coldIds = getColdItems(FEATURED.map((p) => p.id))
@@ -33,22 +31,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <Navbar cartCount={cart.length} />
+      <Navbar />
 
       {/* Hero */}
-      <section className="relative min-h-screen flex items-center pt-14">
+      <section className="relative min-h-[100svh] flex items-center pt-14">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: 'url(https://banimal.co.za/assets/banner-04-BS7lCpQ8.png)' }}
         />
-        <div className="absolute inset-0 bg-bark-900/30" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div className="absolute inset-0 bg-bark-900/40" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="max-w-xl">
-            <p className="label-tag text-cream-200 mb-4">South African Baby Brand</p>
-            <h1 className="font-serif text-5xl md:text-7xl text-cream-50 leading-none mb-6">
+            <p className="text-xs font-mono tracking-widest uppercase text-cream-300 mb-4">South African Baby Brand</p>
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl text-cream-50 leading-tight mb-5 text-balance">
               Soft on skin,<br />kind to earth.
             </h1>
-            <p className="text-cream-200 text-lg mb-8 leading-relaxed">
+            <p className="text-cream-200 text-base md:text-lg mb-8 leading-relaxed max-w-sm md:max-w-none">
               Premium 100% cotton babygrows and bibs, thoughtfully made in South Africa. Shipped worldwide.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -87,7 +85,7 @@ export default function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {FEATURED.map((p) => (
-            <ProductCard key={p.id} product={p} onAdd={addToCart} badge={getBadge(p.id)} />
+            <ProductCard key={p.id} product={p} onAdd={(prod) => addItem(prod)} badge={getBadge(p.id)} />
           ))}
         </div>
 
