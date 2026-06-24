@@ -1,0 +1,12 @@
+{
+  "name": "fruitful-banimal-storefront-static",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Banimal3 pre-built static SPA deployed to banimal.faa.zone via Vercel",
+  "scripts": {
+    "start": "npx serve dist"
+  },
+  "devDependencies": {
+    "serve": "latest"
+  }
+}
