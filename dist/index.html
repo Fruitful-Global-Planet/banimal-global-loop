@@ -114,5 +114,12 @@
     <link rel="stylesheet" crossorigin href="./assets/index-BVP42v5s.css">
   </head>
   <body>
-    <div id="root"></div></body>
+    <div id="root"></div>
+    <div id="giving-badge" style="display:none;position:fixed;bottom:1.25rem;left:1.25rem;background:#7a9e7e;color:#fff;padding:0.4rem 0.85rem;border-radius:2rem;font-size:0.7rem;font-family:sans-serif;letter-spacing:0.03em;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.15)"></div>
+    <script>
+      fetch('/api/giving/stats').then(function(r){return r.json()}).then(function(d){
+        if(d.totalZAR>0){var b=document.getElementById('giving-badge');b.textContent='♥ R'+d.totalZAR.toFixed(2)+' raised';b.style.display='block';}
+      }).catch(function(){});
+    </script>
+  </body>
 </html>
