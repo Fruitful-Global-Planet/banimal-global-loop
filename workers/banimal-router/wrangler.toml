@@ -1,0 +1,32 @@
+name            = "banimal-router"
+main            = "index.js"
+compatibility_date  = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT       = "production"
+BOBGO_FROM_POSTAL = "7441"
+
+# ── Secrets — run BEFORE wrangler deploy ────────────────────────────────────
+#   wrangler secret put PAYSTACK_SECRET_KEY   # from paystack.com/business/settings
+#   wrangler secret put BOBGO_API_KEY          # from app.bobgo.co.za/settings/api
+#   wrangler secret put EXCHANGE_RATE_API_KEY  # from exchangerate-api.com (free tier ok)
+#   wrangler secret put PAYSTACK_R5_LINK       # Paystack payment link for R5 test item
+#   wrangler secret put FAA_ETH_ADDRESS        # FAA-WALLET-001-HS ETH address
+#   wrangler secret put FAA_BTC_ADDRESS        # FAA-WALLET-001-HS BTC address
+#   wrangler secret put FAA_USDT_ADDRESS       # FAA-WALLET-001-HS USDT address
+#   wrangler secret put FAA_XRP_ADDRESS        # FAA-WALLET-001-HS XRP address
+
+# ── KV Namespace (for Paystack address storage) ─────────────────────────────
+#   1. wrangler kv:namespace create BANIMAL_KV
+#   2. Copy the printed id below and uncomment:
+#
+# [[kv_namespaces]]
+# binding = "BANIMAL_KV"
+# id      = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# ── Routes — set in Cloudflare Dashboard after deploying ────────────────────
+# Workers & Pages → banimal-router → Triggers → Add route:
+#   banimal.faa.zone/*          (zone: faa.zone)
+#   banimal.co.za/api/*         (zone: banimal.co.za)
+#   banimal.co.za/webhooks/*    (zone: banimal.co.za)
