@@ -17,16 +17,14 @@ BOBGO_FROM_POSTAL = "7441"
 #   wrangler secret put FAA_USDT_ADDRESS       # FAA-WALLET-001-HS USDT address
 #   wrangler secret put FAA_XRP_ADDRESS        # FAA-WALLET-001-HS XRP address
 
-# ── KV Namespace (for Paystack address storage) ─────────────────────────────
-#   1. wrangler kv:namespace create BANIMAL_KV
-#   2. Copy the printed id below and uncomment:
-#
-# [[kv_namespaces]]
-# binding = "BANIMAL_KV"
-# id      = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+[[kv_namespaces]]
+binding = "BANIMAL_KV"
+id      = "b94b5f024375483abd194d7a79538d36"
 
-# ── Routes — set in Cloudflare Dashboard after deploying ────────────────────
-# Workers & Pages → banimal-router → Triggers → Add route:
-#   banimal.faa.zone/*          (zone: faa.zone)
-#   banimal.co.za/api/*         (zone: banimal.co.za)
-#   banimal.co.za/webhooks/*    (zone: banimal.co.za)
+[[routes]]
+pattern  = "banimal.co.za/api/*"
+zone_name = "banimal.co.za"
+
+[[routes]]
+pattern  = "banimal.co.za/webhooks/*"
+zone_name = "banimal.co.za"

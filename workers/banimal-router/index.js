@@ -20,9 +20,36 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // ── Giving stats ──────────────────────────────────────────────────────
+    if (pathname === '/api/giving/stats' && request.method === 'GET') {
+      const totalZAR = parseFloat(await env.BANIMAL_KV?.get('giving:total_zar') || '0');
+      const count = parseInt(await env.BANIMAL_KV?.get('giving:count') || '0');
+      const lastUpdated = await env.BANIMAL_KV?.get('giving:last_updated') || null;
+      return new Response(JSON.stringify({ totalZAR, count, lastUpdated, rate: 0.1501 }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' },
+      });
+    }
+
     // ── Paystack webhook (charge.success, transfer.success, etc.) ──────────
     if (pathname === '/webhooks/paystack' && request.method === 'POST') {
-      const body = await request.text();
+      const rawBody = await request.text();
+      let parsed = {};
+      try { parsed = JSON.parse(rawBody); } catch {}
+
+      if (parsed?.event === 'charge.success' && env.BANIMAL_KV) {
+        const amountKobo = parsed.data?.amount || 0;
+        const amountZAR = amountKobo / 100;
+        const givingZAR = Math.round(amountZAR * 0.1501 * 100) / 100;
+        const prev = parseFloat(await env.BANIMAL_KV.get('giving:total_zar') || '0');
+        const count = parseInt(await env.BANIMAL_KV.get('giving:count') || '0');
+        ctx.waitUntil(Promise.all([
+          env.BANIMAL_KV.put('giving:total_zar', String(Math.round((prev + givingZAR) * 100) / 100)),
+          env.BANIMAL_KV.put('giving:count', String(count + 1)),
+          env.BANIMAL_KV.put('giving:last_updated', new Date().toISOString()),
+        ]));
+      }
+
       const signature = request.headers.get('x-paystack-signature');
       const response = await fetch('https://api.banimal.faa.zone/webhooks/paystack', {
         method: 'POST',
@@ -31,7 +58,7 @@ export default {
           'x-paystack-signature': signature,
           'x-forwarded-by': 'banimal-router-worker',
         },
-        body,
+        body: rawBody,
       });
       return new Response(await response.text(), {
         status: response.status,
