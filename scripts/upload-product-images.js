@@ -31,7 +31,9 @@ const products = [
   { id: '2598323', img: 'BT010-pzlVe3nP.png' },
 ];
 
-async function uploadProduct(p) {
+console.log('SECRET present:', !!SECRET, 'length:', SECRET ? SECRET.length : 0);
+
+async function uploadProduct(p, isFirst) {
   const imgRes = await fetch(`${CDN}/${p.img}`);
   if (!imgRes.ok) throw new Error(`Download failed: ${imgRes.status}`);
   const buf = Buffer.from(await imgRes.arrayBuffer());
@@ -44,19 +46,29 @@ async function uploadProduct(p) {
     headers: { Authorization: `Bearer ${SECRET}`, ...form.getHeaders() },
     body: form,
   });
-  const json = await res.json();
+  
+  const text = await res.text();
+  if (isFirst) {
+    console.log('HTTP status:', res.status);
+    console.log('Response (first 500):', text.substring(0, 500));
+  }
+  
+  let json;
+  try { json = JSON.parse(text); } catch(e) { throw new Error(`Non-JSON response (${res.status}): ${text.substring(0,200)}`); }
   return json;
 }
 
 (async () => {
   let ok = 0, fail = 0;
-  for (const p of products) {
+  for (let i = 0; i < products.length; i++) {
+    const p = products[i];
     try {
-      const r = await uploadProduct(p);
+      const r = await uploadProduct(p, i === 0);
       if (r.status) { console.log(`OK   ${p.img}`); ok++; }
       else { console.log(`FAIL ${p.img}: ${r.message}`); fail++; }
     } catch (e) {
       console.log(`FAIL ${p.img}: ${e.message}`); fail++;
+      if (i === 0) break; // stop after first failure for debugging
     }
   }
   console.log(`\nDone: ${ok} OK, ${fail} failed`);
