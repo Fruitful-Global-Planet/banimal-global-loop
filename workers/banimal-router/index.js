@@ -365,6 +365,38 @@ export default {
       return Response.json({ status: true }, { headers: cors });
     }
 
+
+    // ── Bundle patch intercept ────────────────────────────────────────────
+    // Vercel deploy webhook stalled; serve patched bundle directly so
+    // checkout redirects to Paystack instead of firing a fake test payment.
+    if (pathname === '/assets/index-y5YmkyAX.js' && request.method === 'GET') {
+      // Fetch from origin bypassing CF cache
+      const originResp = await fetch(request, { cf: { cacheEverything: false, cacheTtl: 0 } });
+      let js = await originResp.text();
+
+      // Patch 1: z() — return full JSON response (not just .reference)
+      js = js.replace(
+        '})).json()).reference}catch',
+        '})).json())}catch'
+      );
+
+      // Patch 2: Q() — replace fake test payment with real Paystack redirect
+      js = js.replace(
+        'V&&W(V);return}await u4();{p({title:"Test payment",description:"Simulated Paystack TEST charge (ZAR)."});const V=await z("paid");V&&W(V);return}}',
+        'V&&W(V.reference);return}{const V=await z("pending");if(V&&V.authorization_url){window.location.href=V.authorization_url}else if(V){W(V.reference)}else{S(!1)}return}}'
+      );
+
+      const patched = js.includes('authorization_url');
+      return new Response(js, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'X-Bundle-Patched': patched ? 'true' : 'patch-failed',
+        },
+      });
+    }
+
     return fetch(request);
   },
 };
