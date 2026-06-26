@@ -1,6 +1,6 @@
 /**
- * Banimal Router v2 — Cloudflare Worker
- * banimal.co.za/api/* + banimal.co.za/webhooks/*
+ * Banimal Router v3 — Cloudflare Worker
+ * banimal.co.za/api/* + banimal.co.za/webhooks/* + banimal.co.za/port/5000/*
  * Payments: Paystack + CapitecPay
  */
 
@@ -31,8 +31,8 @@ export default {
     // ── Health ────────────────────────────────────────────────────────────
     if (pathname === '/health') {
       return Response.json({
-        status: 'ok', service: 'banimal-router', version: '2.0',
-        features: ['paystack-webhook', 'capitecpay-webhook', 'giving-loop', 'delivery-rates', 'exchange-rates', 'digital-delivery', 'faa-wallet'],
+        status: 'ok', service: 'banimal-router', version: '3.0',
+        features: ['paystack-webhook', 'capitecpay-webhook', 'giving-loop', 'delivery-rates', 'exchange-rates', 'digital-delivery', 'faa-wallet', 'orders'],
         paystack_hmac: !!env.PAYSTACK_SECRET_KEY,
         capitecpay_hmac: !!env.CAPITECPAY_SECRET,
         bobgo_live: !!env.BOBGO_API_KEY,
@@ -50,12 +50,76 @@ export default {
       return Response.json({ totalZAR, count, lastUpdated, rate: 0.1501 }, { headers: cors });
     }
 
+    // ── ORDER INIT — React checkout posts here ────────────────────────────
+    // Handles both /port/5000/api/orders (legacy) and /api/orders (clean)
+    if ((pathname === '/port/5000/api/orders' || pathname === '/api/orders') && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch {}
+
+      const { customerName, email, currency = 'ZAR', totalZar, totalUsd, itemsJson } = body;
+
+      if (!email || !totalZar) {
+        return Response.json({ error: 'missing email or totalZar' }, { status: 400, headers: cors });
+      }
+
+      const amountKobo = Math.round(parseFloat(totalZar) * 100);
+      const reference = `ban-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      // Initialize Paystack transaction
+      const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          amount: amountKobo,
+          currency: 'ZAR',
+          reference,
+          callback_url: 'https://www.banimal.co.za/checkout?paystack_callback=true',
+          metadata: {
+            custom_fields: [
+              { display_name: 'Customer Name', variable_name: 'customer_name', value: customerName || '' },
+              { display_name: 'Order Items', variable_name: 'items', value: itemsJson || '' },
+            ],
+          },
+        }),
+      });
+
+      const paystackData = await paystackRes.json();
+
+      if (!paystackData.status) {
+        return Response.json({ error: paystackData.message || 'Paystack init failed' }, { status: 502, headers: cors });
+      }
+
+      // Store pending order in KV
+      if (env.BANIMAL_KV) {
+        ctx.waitUntil(env.BANIMAL_KV.put(`order:${reference}`, JSON.stringify({
+          ref: reference,
+          email,
+          customerName,
+          amount_zar: parseFloat(totalZar),
+          giving_zar: Math.round(parseFloat(totalZar) * 0.1501 * 100) / 100,
+          items: itemsJson,
+          status: 'pending',
+          ts: new Date().toISOString(),
+        }), { expirationTtl: 7776000 }));
+      }
+
+      return Response.json({
+        status: true,
+        reference,
+        authorization_url: paystackData.data.authorization_url,
+        access_code: paystackData.data.access_code,
+      }, { headers: cors });
+    }
+
     // ── Paystack webhook ──────────────────────────────────────────────────
     if (pathname === '/webhooks/paystack' && request.method === 'POST') {
       const rawBody = await request.text();
       const sig = request.headers.get('x-paystack-signature') || '';
 
-      // HMAC verify (512-bit)
       const valid = await verifyHmac(rawBody, sig, env.PAYSTACK_SECRET_KEY);
       if (!valid) return new Response('Unauthorized', { status: 401 });
 
@@ -80,11 +144,10 @@ export default {
           env.BANIMAL_KV.put(`order:${ref}`, JSON.stringify({
             ref, amount_zar: amountZAR, giving_zar: givingZAR,
             email: parsed.data?.customer?.email, ts: new Date().toISOString(),
-            meta, status: 'paid'
-          }), { expirationTtl: 7776000 }), // 90 days
+            meta, status: 'paid',
+          }), { expirationTtl: 7776000 }),
         ]));
 
-        // Digital delivery — if redirect_url already handles it on Paystack side, this is belt+braces
         const productType = meta?.type;
         if (productType === 'digital' && env.RESEND_API_KEY && parsed.data?.customer?.email) {
           const redirectUrl = meta?.redirect_url || '';
@@ -96,7 +159,7 @@ export default {
               to: [parsed.data.customer.email],
               subject: `Your Sam Fox Digital Certificate — ${meta?.sku || ''}`,
               html: `<p>Thank you for your purchase! Your digital certificate is ready:</p><p><a href="${redirectUrl}">Download your certificate here</a></p><p>— The Fruitful Team</p>`,
-            })
+            }),
           }));
         }
       }
@@ -115,7 +178,6 @@ export default {
       let parsed = {};
       try { parsed = JSON.parse(rawBody); } catch {}
 
-      // CapitecPay payment notification
       if ((parsed?.status === 'SUCCESS' || parsed?.paymentStatus === 'SUCCESSFUL') && env.BANIMAL_KV) {
         const amountZAR = (parsed.amount || parsed.totalAmount || 0) / 100;
         const givingZAR = Math.round(amountZAR * 0.1501 * 100) / 100;
@@ -131,7 +193,7 @@ export default {
           env.BANIMAL_KV.put('giving:last_updated', new Date().toISOString()),
           env.BANIMAL_KV.put(`order:cap:${ref}`, JSON.stringify({
             ref, amount_zar: amountZAR, giving_zar: givingZAR,
-            provider: 'capitecpay', ts: new Date().toISOString(), raw: parsed
+            provider: 'capitecpay', ts: new Date().toISOString(), raw: parsed,
           }), { expirationTtl: 7776000 }),
         ]));
       }
@@ -139,7 +201,7 @@ export default {
       return Response.json({ received: true }, { headers: cors });
     }
 
-    // ── Address callback (Paystack checkout step) ─────────────────────────
+    // ── Address callback ──────────────────────────────────────────────────
     if (pathname === '/api/paystack/address-callback' && request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch {}
@@ -192,7 +254,7 @@ export default {
           { service: 'Standard Delivery', price: free ? 0 : 85, days: '3–5 business days' },
           { service: 'Express Delivery', price: free ? 60 : 145, days: '1–2 business days' },
         ],
-        source: 'fallback', free_from: 500
+        source: 'fallback', free_from: 500,
       }, { headers: cors });
     }
 
