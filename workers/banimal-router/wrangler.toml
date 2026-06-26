@@ -5,17 +5,15 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT       = "production"
-BOBGO_FROM_POSTAL = "7441"
+BOBGO_FROM_POSTAL = "0044"
 
-# ── Secrets — run BEFORE wrangler deploy ────────────────────────────────────
-#   wrangler secret put PAYSTACK_SECRET_KEY   # from paystack.com/business/settings
-#   wrangler secret put BOBGO_API_KEY          # from app.bobgo.co.za/settings/api
-#   wrangler secret put EXCHANGE_RATE_API_KEY  # from exchangerate-api.com (free tier ok)
-#   wrangler secret put PAYSTACK_R5_LINK       # Paystack payment link for R5 test item
-#   wrangler secret put FAA_ETH_ADDRESS        # FAA-WALLET-001-HS ETH address
-#   wrangler secret put FAA_BTC_ADDRESS        # FAA-WALLET-001-HS BTC address
-#   wrangler secret put FAA_USDT_ADDRESS       # FAA-WALLET-001-HS USDT address
-#   wrangler secret put FAA_XRP_ADDRESS        # FAA-WALLET-001-HS XRP address
+# ── Secrets (wrangler secret put <NAME>) ─────────────────────────────────────
+#   PAYSTACK_SECRET_KEY   — from paystack.com/business/settings
+#   CAPITECPAY_SECRET     — from CapitecPay merchant portal
+#   BOBGO_API_KEY          — from app.bobgo.co.za/settings/api
+#   EXCHANGE_RATE_API_KEY  — from exchangerate-api.com
+#   RESEND_API_KEY         — from resend.com (digital download emails)
+#   FAA_ETH_ADDRESS / FAA_BTC_ADDRESS / FAA_USDT_ADDRESS / FAA_XRP_ADDRESS
 
 [[kv_namespaces]]
 binding = "BANIMAL_KV"
