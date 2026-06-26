@@ -278,6 +278,12 @@ export default {
       return Response.json({ wallet_id:'FAA-WALLET-001-HS', node:'GEN-ALPHA-ASIVEREIGER', assets:['ETH','BTC','USDT','XRP','BODCOIN','GRIPTO'], fiat_bridge:['Paystack','CapitecPay','Valr','Stripe'], eth_address:env.FAA_ETH_ADDRESS||null, btc_address:env.FAA_BTC_ADDRESS||null, note:'Set FAA_ETH_ADDRESS etc via wrangler secret' }, { headers: cors });
     }
 
+
+    // ── Transfer approval (auto-approve all Paystack payouts) ─────────────
+    if (pathname === '/webhooks/paystack/transfer-approval' && request.method === 'POST') {
+      return Response.json({ status: true }, { headers: cors });
+    }
+
     return fetch(request);
   },
 };
