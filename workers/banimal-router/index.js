@@ -1,11 +1,11 @@
 /**
- * Banimal Router v3 — Cloudflare Worker
+ * Banimal Router v5 — Cloudflare Worker
  * banimal.co.za/api/* + banimal.co.za/webhooks/* + banimal.co.za/port/5000/*
  * Payments: Paystack + CapitecPay
  */
 
 async function verifyHmac(body, signature, secret) {
-  if (!secret || !signature) return true; // skip if no secret configured
+  if (!secret || !signature) return true;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-512' }, false, ['verify']
@@ -13,6 +13,22 @@ async function verifyHmac(body, signature, secret) {
   const sigBytes = new Uint8Array(signature.match(/.{1,2}/g).map(b => parseInt(b, 16)));
   const bodyBytes = enc.encode(body);
   return crypto.subtle.verify('HMAC', key, sigBytes, bodyBytes);
+}
+
+async function paystackGet(path, secret) {
+  const r = await fetch(`https://api.paystack.co${path}`, {
+    headers: { 'Authorization': `Bearer ${secret}` }
+  });
+  return r.json();
+}
+
+async function paystackPost(path, body, secret) {
+  const r = await fetch(`https://api.paystack.co${path}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${secret}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return r.json();
 }
 
 export default {
@@ -31,8 +47,8 @@ export default {
     // ── Health ────────────────────────────────────────────────────────────
     if (pathname === '/health') {
       return Response.json({
-        status: 'ok', service: 'banimal-router', version: '3.0',
-        features: ['paystack-webhook', 'capitecpay-webhook', 'giving-loop', 'delivery-rates', 'exchange-rates', 'digital-delivery', 'faa-wallet', 'orders'],
+        status: 'ok', service: 'banimal-router', version: '5.0',
+        features: ['paystack', 'capitecpay', 'giving-loop', 'delivery', 'exchange-rates', 'orders', 'refunds', 'verify'],
         paystack_hmac: !!env.PAYSTACK_SECRET_KEY,
         capitecpay_hmac: !!env.CAPITECPAY_SECRET,
         bobgo_live: !!env.BOBGO_API_KEY,
@@ -51,7 +67,6 @@ export default {
     }
 
     // ── ORDER INIT — React checkout posts here ────────────────────────────
-    // Handles both /port/5000/api/orders (legacy) and /api/orders (clean)
     if ((pathname === '/port/5000/api/orders' || pathname === '/api/orders') && request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch {}
@@ -65,35 +80,25 @@ export default {
       const amountKobo = Math.round(parseFloat(totalZar) * 100);
       const reference = `ban-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-      // Initialize Paystack transaction
-      const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json',
+      const paystackData = await paystackPost('/transaction/initialize', {
+        email,
+        amount: amountKobo,
+        currency: 'ZAR',
+        reference,
+        callback_url: 'https://www.banimal.co.za/checkout?paystack_callback=true',
+        metadata: {
+          custom_fields: [
+            { display_name: 'Customer Name', variable_name: 'customer_name', value: customerName || '' },
+            { display_name: 'Order Items', variable_name: 'items', value: itemsJson || '' },
+          ],
         },
-        body: JSON.stringify({
-          email,
-          amount: amountKobo,
-          currency: 'ZAR',
-          reference,
-          callback_url: 'https://www.banimal.co.za/checkout?paystack_callback=true',
-          metadata: {
-            custom_fields: [
-              { display_name: 'Customer Name', variable_name: 'customer_name', value: customerName || '' },
-              { display_name: 'Order Items', variable_name: 'items', value: itemsJson || '' },
-            ],
-          },
-        }),
-      });
-
-      const paystackData = await paystackRes.json();
+        channels: ['card', 'bank_transfer', 'eft', 'capitec_pay'],
+      }, env.PAYSTACK_SECRET_KEY);
 
       if (!paystackData.status) {
         return Response.json({ error: paystackData.message || 'Paystack init failed' }, { status: 502, headers: cors });
       }
 
-      // Store pending order in KV
       if (env.BANIMAL_KV) {
         ctx.waitUntil(env.BANIMAL_KV.put(`order:${reference}`, JSON.stringify({
           ref: reference,
@@ -115,6 +120,54 @@ export default {
       }, { headers: cors });
     }
 
+    // ── VERIFY TRANSACTION ────────────────────────────────────────────────
+    // Called by frontend after Paystack callback redirect
+    if ((pathname.startsWith('/api/verify/') || pathname.startsWith('/port/5000/api/verify/')) && request.method === 'GET') {
+      const ref = pathname.split('/api/verify/')[1] || pathname.split('/port/5000/api/verify/')[1];
+      if (!ref) return Response.json({ error: 'missing reference' }, { status: 400, headers: cors });
+
+      const data = await paystackGet(`/transaction/verify/${encodeURIComponent(ref)}`, env.PAYSTACK_SECRET_KEY);
+
+      if (data.status && data.data?.status === 'success') {
+        // Update KV order to paid
+        if (env.BANIMAL_KV) {
+          const existing = await env.BANIMAL_KV.get(`order:${ref}`);
+          const order = existing ? JSON.parse(existing) : {};
+          const amountZAR = (data.data.amount || 0) / 100;
+          ctx.waitUntil(env.BANIMAL_KV.put(`order:${ref}`, JSON.stringify({
+            ...order,
+            ref,
+            status: 'paid',
+            paid_at: data.data.paid_at,
+            channel: data.data.channel,
+            amount_zar: amountZAR,
+            giving_zar: Math.round(amountZAR * 0.1501 * 100) / 100,
+            email: data.data.customer?.email || order.email,
+            authorization_code: data.data.authorization?.authorization_code,
+          }), { expirationTtl: 7776000 }));
+        }
+        return Response.json({ status: true, paid: true, reference: ref, amount_zar: (data.data.amount||0)/100, channel: data.data.channel }, { headers: cors });
+      }
+
+      return Response.json({ status: true, paid: false, reference: ref, paystack_status: data.data?.status }, { headers: cors });
+    }
+
+    // ── REFUND ────────────────────────────────────────────────────────────
+    if (pathname === '/api/refund' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch {}
+      const { transaction, amount, customer_note, merchant_note } = body;
+      if (!transaction) return Response.json({ error: 'missing transaction' }, { status: 400, headers: cors });
+
+      const refundPayload = { transaction };
+      if (amount) refundPayload.amount = Math.round(amount * 100);
+      if (customer_note) refundPayload.customer_note = customer_note;
+      if (merchant_note) refundPayload.merchant_note = merchant_note;
+
+      const data = await paystackPost('/refund', refundPayload, env.PAYSTACK_SECRET_KEY);
+      return Response.json(data, { headers: cors });
+    }
+
     // ── Paystack webhook ──────────────────────────────────────────────────
     if (pathname === '/webhooks/paystack' && request.method === 'POST') {
       const rawBody = await request.text();
@@ -126,28 +179,39 @@ export default {
       let parsed = {};
       try { parsed = JSON.parse(rawBody); } catch {}
 
-      if (parsed?.event === 'charge.success' && env.BANIMAL_KV) {
+      const event = parsed?.event;
+
+      if (event === 'charge.success' && env.BANIMAL_KV) {
         const amountZAR = (parsed.data?.amount || 0) / 100;
         const givingZAR = Math.round(amountZAR * 0.1501 * 100) / 100;
         const ref = parsed.data?.reference || '';
         const meta = parsed.data?.metadata || {};
 
-        const [prev, cnt] = await Promise.all([
+        const [prev, cnt, existing] = await Promise.all([
           env.BANIMAL_KV.get('giving:total_zar').then(v => parseFloat(v||'0')),
           env.BANIMAL_KV.get('giving:count').then(v => parseInt(v||'0')),
+          env.BANIMAL_KV.get(`order:${ref}`),
         ]);
+
+        const order = existing ? JSON.parse(existing) : {};
 
         ctx.waitUntil(Promise.all([
           env.BANIMAL_KV.put('giving:total_zar', String(Math.round((prev + givingZAR)*100)/100)),
           env.BANIMAL_KV.put('giving:count', String(cnt + 1)),
           env.BANIMAL_KV.put('giving:last_updated', new Date().toISOString()),
           env.BANIMAL_KV.put(`order:${ref}`, JSON.stringify({
+            ...order,
             ref, amount_zar: amountZAR, giving_zar: givingZAR,
-            email: parsed.data?.customer?.email, ts: new Date().toISOString(),
+            email: parsed.data?.customer?.email || order.email,
+            channel: parsed.data?.channel,
+            paid_at: parsed.data?.paid_at,
+            authorization_code: parsed.data?.authorization?.authorization_code,
+            ts: new Date().toISOString(),
             meta, status: 'paid',
           }), { expirationTtl: 7776000 }),
         ]));
 
+        // Digital product email delivery
         const productType = meta?.type;
         if (productType === 'digital' && env.RESEND_API_KEY && parsed.data?.customer?.email) {
           const redirectUrl = meta?.redirect_url || '';
@@ -157,10 +221,28 @@ export default {
             body: JSON.stringify({
               from: 'Banimal <noreply@banimal.co.za>',
               to: [parsed.data.customer.email],
-              subject: `Your Sam Fox Digital Certificate — ${meta?.sku || ''}`,
-              html: `<p>Thank you for your purchase! Your digital certificate is ready:</p><p><a href="${redirectUrl}">Download your certificate here</a></p><p>— The Fruitful Team</p>`,
+              subject: `Your Banimal Order — ${ref}`,
+              html: `<p>Thank you for your purchase!</p><p>Your digital item is ready: <a href="${redirectUrl}">${redirectUrl}</a></p><p>— The Fruitful Team</p>`,
             }),
           }));
+        }
+      }
+
+      if (event === 'charge.dispute.create' && env.BANIMAL_KV) {
+        const ref = parsed.data?.transaction?.reference || '';
+        ctx.waitUntil(env.BANIMAL_KV.put(`dispute:${ref}`, JSON.stringify({ ...parsed.data, ts: new Date().toISOString() }), { expirationTtl: 7776000 }));
+      }
+
+      if (event === 'refund.processed' && env.BANIMAL_KV) {
+        const ref = parsed.data?.transaction?.reference || parsed.data?.reference || '';
+        if (ref) {
+          const existing = await env.BANIMAL_KV.get(`order:${ref}`);
+          if (existing) {
+            const order = JSON.parse(existing);
+            ctx.waitUntil(env.BANIMAL_KV.put(`order:${ref}`, JSON.stringify({
+              ...order, status: 'refunded', refunded_at: new Date().toISOString(),
+            }), { expirationTtl: 7776000 }));
+          }
         }
       }
 
@@ -193,7 +275,7 @@ export default {
           env.BANIMAL_KV.put('giving:last_updated', new Date().toISOString()),
           env.BANIMAL_KV.put(`order:cap:${ref}`, JSON.stringify({
             ref, amount_zar: amountZAR, giving_zar: givingZAR,
-            provider: 'capitecpay', ts: new Date().toISOString(), raw: parsed,
+            provider: 'capitecpay', ts: new Date().toISOString(), raw: parsed, status: 'paid',
           }), { expirationTtl: 7776000 }),
         ]));
       }
@@ -215,8 +297,8 @@ export default {
     }
 
     // ── Order lookup ──────────────────────────────────────────────────────
-    if (pathname.startsWith('/api/order/') && request.method === 'GET') {
-      const ref = pathname.split('/api/order/')[1];
+    if ((pathname.startsWith('/api/order/') || pathname.startsWith('/port/5000/api/order/')) && request.method === 'GET') {
+      const ref = pathname.includes('/port/5000/') ? pathname.split('/port/5000/api/order/')[1] : pathname.split('/api/order/')[1];
       if (!ref) return Response.json({ error: 'missing ref' }, { status: 400, headers: cors });
       const order = await env.BANIMAL_KV?.get(`order:${ref}`) || await env.BANIMAL_KV?.get(`order:cap:${ref}`);
       if (!order) return Response.json({ error: 'not found' }, { status: 404, headers: cors });
@@ -278,8 +360,7 @@ export default {
       return Response.json({ wallet_id:'FAA-WALLET-001-HS', node:'GEN-ALPHA-ASIVEREIGER', assets:['ETH','BTC','USDT','XRP','BODCOIN','GRIPTO'], fiat_bridge:['Paystack','CapitecPay','Valr','Stripe'], eth_address:env.FAA_ETH_ADDRESS||null, btc_address:env.FAA_BTC_ADDRESS||null, note:'Set FAA_ETH_ADDRESS etc via wrangler secret' }, { headers: cors });
     }
 
-
-    // ── Transfer approval (auto-approve all Paystack payouts) ─────────────
+    // ── Transfer approval ─────────────────────────────────────────────────
     if (pathname === '/webhooks/paystack/transfer-approval' && request.method === 'POST') {
       return Response.json({ status: true }, { headers: cors });
     }
