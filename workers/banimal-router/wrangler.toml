@@ -31,3 +31,15 @@ zone_name = "banimal.co.za"
 pattern  = "banimal.co.za/port/5000/*"
 zone_name = "banimal.co.za"
 
+[[routes]]
+pattern  = "www.banimal.co.za/api/*"
+zone_name = "banimal.co.za"
+
+[[routes]]
+pattern  = "www.banimal.co.za/webhooks/*"
+zone_name = "banimal.co.za"
+
+[[routes]]
+pattern  = "www.banimal.co.za/port/5000/*"
+zone_name = "banimal.co.za"
+
