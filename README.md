@@ -1,5 +1,18 @@
 # 🍉 Banimal Global Loop — Fruitful Global Planet Backend
 
+---
+
+## 🧠 Banimal Memory Snapshot — Session Anchor
+
+> When an assistant or developer context is lost, **do not re-derive the system from scratch**.  
+> First read `docs/BANIMAL-MEMORY-SNAPSHOT.md` and then continue work.
+
+This project uses a **persistent snapshot file** to preserve:
+- Current payment + logistics focus (Paystack, BobGo, Zoho, Cloudflare Workers)
+- Physical product assumptions for Banimal SKUs (dimensions, max weight)
+ts, gateways, webhooks, or fulfilment logic, update the snapshot timestamp and sections instead of relying on assistant memory alone.
+
+
 > **The central backend engine** connecting real-world physical products to 13,000+ digital brands across the `seedwave.faa.zone` ecosystem, powered by the `Fruitful-Global-Planet` organisation and mirrored through the `heyns1000` CodeNest parallel repository network.
 
 ---
