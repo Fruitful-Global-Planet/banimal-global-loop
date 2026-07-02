@@ -5,7 +5,11 @@
  */
 
 async function verifyHmac(body, signature, secret) {
-  if (!secret || !signature) return true;
+  // Fail closed: a webhook with no signature, or arriving while no secret is
+  // configured, must be rejected — not treated as pre-verified. The previous
+  // `return true` here meant anyone could POST a fake "payment successful"
+  // webhook with no signature header and have it processed as real.
+  if (!secret || !signature) return false;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-512' }, false, ['verify']
