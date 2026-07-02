@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
+import { useCart } from '@/contexts/CartContext'
 
 const ALL_PRODUCTS: Product[] = [
   { id: 'BT001', name: 'Classic White Babygrow', price: 289, image: 'https://banimal.co.za/assets/BT001-BYDvu1g2.png', category: 'Babygrow', sizes: ['0–3m'] },
@@ -17,13 +18,20 @@ const ALL_PRODUCTS: Product[] = [
   { id: 'BT010', name: 'Ivory Babygrow', price: 289, image: 'https://banimal.co.za/assets/BT010-pzlVe3nP.png', category: 'Babygrow', sizes: ['6–9m'] },
   { id: 'BR001', name: 'Bandana Bib — Oatmeal', price: 129, image: 'https://banimal.co.za/assets/BR001-B9Svc9IF.png', category: 'Bib', isNew: true },
   { id: 'BR002', name: 'Bandana Bib — Slate', price: 129, image: 'https://banimal.co.za/assets/BR002-m4ScX5Ak.png', category: 'Bib', isNew: true },
+  { id: 'PR001', name: 'Magical Forest', price: 500, image: '/assets/prints/print-portrait-01.jpg', category: 'Print', isNew: true },
+  { id: 'PR002', name: 'Happy Place', price: 500, image: '/assets/prints/print-portrait-02.jpg', category: 'Print', isNew: true },
+  { id: 'PR003', name: 'Monster Prints', price: 500, image: '/assets/prints/print-portrait-03.jpg', category: 'Print', isNew: true },
+  { id: 'PR004', name: 'Loved', price: 500, image: '/assets/prints/print-portrait-04.jpg', category: 'Print', isNew: true },
+  { id: 'PR005', name: 'Animal Prints', price: 500, image: '/assets/prints/print-portrait-05.jpg', category: 'Print', isNew: true },
+  { id: 'PR006', name: 'Magical Landscape', price: 500, image: '/assets/prints/print-portrait-06.jpg', category: 'Print', isNew: true },
+  { id: 'PR007', name: 'Wildlings', price: 500, image: '/assets/prints/print-portrait-07.jpg', category: 'Print', isNew: true },
 ]
 
-const CATS = ['All', 'Babygrow', 'Bib']
+const CATS = ['All', 'Babygrow', 'Bib', 'Print']
 
 export default function Shop() {
   const [cat, setCat] = useState('All')
-  const [cart, setCart] = useState<Product[]>([])
+  const { items, addItem, subtotal } = useCart()
   const { getHotItems, getColdItems } = useAnalytics()
 
   const filtered = cat === 'All' ? ALL_PRODUCTS : ALL_PRODUCTS.filter((p) => p.category === cat)
@@ -36,11 +44,9 @@ export default function Shop() {
     return undefined
   }
 
-  const cartTotal = cart.reduce((s, p) => s + p.price, 0)
-
   return (
     <div className="min-h-screen">
-      <Navbar cartCount={cart.length} />
+      <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24">
         <div className="mb-12">
@@ -48,7 +54,7 @@ export default function Shop() {
           <h1 className="font-serif text-4xl text-bark-800">Shop all</h1>
         </div>
 
-        <div className="flex gap-3 mb-10">
+        <div className="flex gap-3 mb-10 flex-wrap">
           {CATS.map((c) => (
             <button
               key={c}
@@ -66,11 +72,11 @@ export default function Shop() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} onAdd={(prod) => setCart((prev) => [...prev, prod])} badge={getBadge(p.id)} />
+            <ProductCard key={p.id} product={p} onAdd={addItem} badge={getBadge(p.id)} />
           ))}
         </div>
 
-        {cartTotal > 0 && <CharitableGiving orderTotalZAR={cartTotal} />}
+        {items.length > 0 && <CharitableGiving orderTotalZAR={subtotal} />}
       </div>
 
       <Footer />

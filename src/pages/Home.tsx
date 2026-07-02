@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Heart } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -7,6 +6,7 @@ import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 
 const FEATURED: Product[] = [
   { id: 'BT001', name: 'Classic White Babygrow 0–3m', price: 289, image: 'https://banimal.co.za/assets/BT001-BYDvu1g2.png', category: 'Babygrow', sizes: ['0–3m'], isNew: false },
@@ -16,11 +16,9 @@ const FEATURED: Product[] = [
 ]
 
 export default function Home() {
-  const [cart, setCart] = useState<Product[]>([])
+  const { addItem } = useCart()
   const { getHotItems, getColdItems } = useAnalytics()
   const { openAuth, user } = useAuth()
-
-  const addToCart = (p: Product) => setCart((prev) => [...prev, p])
 
   const hotIds = getHotItems()
   const coldIds = getColdItems(FEATURED.map((p) => p.id))
@@ -33,7 +31,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <Navbar cartCount={cart.length} />
+      <Navbar />
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center pt-14">
@@ -87,7 +85,7 @@ export default function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {FEATURED.map((p) => (
-            <ProductCard key={p.id} product={p} onAdd={addToCart} badge={getBadge(p.id)} />
+            <ProductCard key={p.id} product={p} onAdd={addItem} badge={getBadge(p.id)} />
           ))}
         </div>
 

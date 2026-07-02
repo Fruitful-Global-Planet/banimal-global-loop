@@ -5,10 +5,18 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
   body {
     @apply bg-cream-100 text-bark-800 antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  html.dark body {
+    @apply bg-bark-900 text-cream-100;
   }
   h1, h2, h3 {
     font-family: 'Fraunces', Georgia, serif;
@@ -31,3 +39,19 @@
     @apply text-xs font-mono tracking-widest uppercase text-cream-400;
   }
 }
+
+/* Dark mode surface overrides — the app's components are written against the
+   light "cream/bark" palette; these swap the same surfaces to dark tones
+   without needing every component to carry its own dark: variants. */
+html.dark .bg-cream-50 { @apply bg-bark-800; }
+html.dark .bg-cream-100 { @apply bg-bark-900; }
+html.dark .bg-cream-100\/95 { background-color: rgb(30 24 13 / 0.95); }
+html.dark .bg-cream-200 { @apply bg-bark-700; }
+html.dark .border-cream-200 { @apply border-bark-700; }
+html.dark .border-cream-300 { @apply border-bark-700; }
+html.dark .text-bark-800 { @apply text-cream-100; }
+html.dark .text-bark-700\/80 { color: rgb(246 241 231 / 0.8); }
+html.dark .text-bark-700\/60 { color: rgb(246 241 231 / 0.6); }
+html.dark .text-bark-700\/40 { color: rgb(246 241 231 / 0.4); }
+html.dark .hover\:bg-cream-200:hover { @apply hover:bg-bark-700; }
+html.dark .hover\:bg-cream-300:hover { @apply hover:bg-bark-700; }

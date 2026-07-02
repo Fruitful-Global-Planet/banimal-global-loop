@@ -2,15 +2,15 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingBag, Menu, X, User } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 import SocialAuthModal from './SocialAuthModal'
+import ThemeToggle from './ThemeToggle'
 
-interface Props {
-  cartCount?: number
-}
-
-export default function Navbar({ cartCount = 0 }: Props) {
+export default function Navbar() {
   const [open, setOpen] = useState(false)
   const { user, showAuthModal, openAuth, closeAuth, signOut } = useAuth()
+  const { items } = useCart()
+  const cartCount = items.length
   const navigate = useNavigate()
 
   return (
@@ -29,6 +29,7 @@ export default function Navbar({ cartCount = 0 }: Props) {
             </div>
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <button
                 onClick={user ? signOut : openAuth}
                 className="p-2 rounded-full hover:bg-cream-200 transition-colors"
