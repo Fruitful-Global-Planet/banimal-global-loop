@@ -19,34 +19,13 @@ BOBGO_FROM_POSTAL = "0044"
 binding = "BANIMAL_KV"
 id      = "b94b5f024375483abd194d7a79538d36"
 
-[[routes]]
-pattern  = "banimal.co.za/api/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "banimal.co.za/webhooks/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "banimal.co.za/port/5000/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "banimal.co.za/assets/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "www.banimal.co.za/api/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "www.banimal.co.za/webhooks/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "www.banimal.co.za/port/5000/*"
-zone_name = "banimal.co.za"
-
-[[routes]]
-pattern  = "www.banimal.co.za/assets/*"
-zone_name = "banimal.co.za"
+# ── Routes intentionally REMOVED ─────────────────────────────────────────────
+# banimal-router previously bound banimal.co.za/api/*, /webhooks/*, /port/5000/*
+# and /assets/* (plus the www.* equivalents). Those routes are owned by the
+# heyns1000/banimal Cloudflare Worker, which holds the live Paystack / CapitecPay
+# / BobGo secrets. Binding them here hijacked /api onto this worker (which lacks
+# those secrets), breaking Paystack with "Invalid key". Removing the bindings and
+# redeploying releases the routes so the heyns1000/banimal worker serves them again.
+#
+# Do NOT re-add these route patterns unless this worker is intended to own the
+# live API and has the required secrets set via `wrangler secret put`.
