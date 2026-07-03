@@ -116,12 +116,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Apply free shipping if order qualifies
   if (isFreeShipping) {
-    rates = rates.map((r) => ({
-      ...r,
-      price: 0,
-      service: `${r.service} (FREE)`,
-    }))
+    rates = rates.map((r) => {
+      // Remove the FREE suffix if it was already added during fallback
+      const cleanService = r.service.replace(/\s*\(FREE\)$/, '')
+      return {
+        ...r,
+        price: 0,
+        service: `${cleanService} (FREE)`,
+      }
+    })
   }
 
-  res.status(200).json({ rates })
+  res.status(200).json({ rates, isFreeShipping, freeThreshold })
 }
