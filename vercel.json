@@ -1,7 +1,12 @@
 {
-  "buildCommand": "echo 'pre-built Banimal2 static site'",
+  "buildCommand": "echo 'pre-built Banimal2 static site with serverless API'",
   "installCommand": "true",
   "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api|bib|assets|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
