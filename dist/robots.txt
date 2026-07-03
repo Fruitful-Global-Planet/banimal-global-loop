@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://banimal.co.za/sitemap.xml

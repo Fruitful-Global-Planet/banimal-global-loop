@@ -12,7 +12,7 @@ interface Props {
   onSelect: (rate: Rate) => void
 }
 
-const API = (import.meta.env.VITE_DELIVERY_API_URL as string) || 'https://banimal.co.za/api/delivery'
+const API = '/api/delivery'
 
 export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
   const [address, setAddress] = useState('')
@@ -80,8 +80,36 @@ export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
     onSelect(r)
   }
 
+  // Determine location and free shipping threshold
+  const isInternational = !/^[0-9]{4}$/.test(postalCode)
+  const freeThreshold = isInternational ? 1500 : 500
+  const qualifiesForFree = orderValueZAR >= freeThreshold
+  const locationLabel = isInternational ? 'international' : 'South African'
+  
   return (
     <div className="space-y-4">
+      {postalCode && (
+        <div className={`p-3 rounded-xl flex items-start gap-2 border ${
+          qualifiesForFree
+            ? 'bg-emerald-50 border-emerald-200'
+            : 'bg-amber-50 border-amber-200'
+        }`}>
+          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+            qualifiesForFree ? 'bg-emerald-400' : 'bg-amber-400'
+          }`} />
+          <p className={`text-xs ${
+            qualifiesForFree
+              ? 'text-emerald-800'
+              : 'text-amber-800'
+          }`}>
+            {qualifiesForFree 
+              ? `✓ You qualify for free delivery on this ${locationLabel} order`
+              : `Add R${(freeThreshold - orderValueZAR).toFixed(2)} more for free ${locationLabel} delivery`
+            }
+          </p>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-lg text-bark-800">Delivery</h3>
         <button
@@ -131,26 +159,33 @@ export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
 
       {rates.length > 0 && (
         <div className="space-y-2">
-          {rates.map((r) => (
-            <button
-              key={r.service}
-              onClick={() => pick(r)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-colors ${
-                selected?.service === r.service
-                  ? 'border-bark-800 bg-bark-800/5'
-                  : 'border-cream-300 hover:border-bark-700'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-bark-700/60" />
-                <div className="text-left">
-                  <p className="font-medium text-bark-800">{r.service}</p>
-                  <p className="text-xs text-bark-700/60">{r.days}</p>
+          {rates.map((r) => {
+            const isFree = r.price === 0
+            return (
+              <button
+                key={r.service}
+                onClick={() => pick(r)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-colors ${
+                  selected?.service === r.service
+                    ? 'border-bark-800 bg-bark-800/5'
+                    : 'border-cream-300 hover:border-bark-700'
+                } ${isFree ? 'bg-emerald-50/50' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Truck className={`w-4 h-4 ${isFree ? 'text-emerald-600' : 'text-bark-700/60'}`} />
+                  <div className="text-left">
+                    <p className="font-medium text-bark-800">{r.service}</p>
+                    <p className="text-xs text-bark-700/60">{r.days}</p>
+                  </div>
                 </div>
-              </div>
-              <span className="font-mono text-bark-800">R {r.price}</span>
-            </button>
-          ))}
+                <span className={`font-mono font-semibold ${
+                  isFree ? 'text-emerald-600' : 'text-bark-800'
+                }`}>
+                  {isFree ? 'FREE' : `R ${r.price}`}
+                </span>
+              </button>
+            )
+          })}
         </div>
       )}
     </div>
