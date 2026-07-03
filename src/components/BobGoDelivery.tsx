@@ -54,7 +54,7 @@ export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
     if (!postalCode) return
     setLoading(true)
     try {
-      const resp = await fetch(`${API}/rates`, {
+      const resp = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toPostalCode: postalCode, orderValueZAR }),
