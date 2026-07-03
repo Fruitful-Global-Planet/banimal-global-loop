@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="bg-bark-800 text-cream-200 mt-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
             <img src="https://banimal.co.za/assets/logo-white-Cn9gtfrc.png" alt="Banimal" className="h-8 mb-4" />
             <p className="text-cream-400 text-sm leading-relaxed">
@@ -25,6 +25,15 @@ export default function Footer() {
               <li><Link to="/about" className="hover:text-cream-200 transition-colors">About</Link></li>
               <li><a href="mailto:hello@banimal.co.za" className="hover:text-cream-200 transition-colors">Contact</a></li>
               <li><a href="https://banimal.co.za" className="hover:text-cream-200 transition-colors">banimal.co.za</a></li>
+            </ul>
+          </div>
+          <div>
+            <p className="label-tag mb-4">Policies</p>
+            <ul className="space-y-2 text-sm text-cream-400">
+              <li><Link to="/returns" className="hover:text-cream-200 transition-colors">Returns &amp; Refunds</Link></li>
+              <li><Link to="/shipping" className="hover:text-cream-200 transition-colors">Shipping</Link></li>
+              <li><Link to="/privacy" className="hover:text-cream-200 transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-cream-200 transition-colors">Terms &amp; Conditions</Link></li>
             </ul>
           </div>
           <div>
