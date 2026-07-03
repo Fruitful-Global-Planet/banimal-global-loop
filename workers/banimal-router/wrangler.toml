@@ -19,17 +19,6 @@ BOBGO_FROM_POSTAL = "0044"
 binding = "BANIMAL_KV"
 id      = "b94b5f024375483abd194d7a79538d36"
 
-# ── Routes ───────────────────────────────────────────────────────────────────
-# banimal-router is the owner of the banimal.co.za API surface. The heyns1000/
-# banimal worker does NOT bind these routes (its wrangler.json has routes:null),
-# so these bindings must stay here or /api goes offline entirely.
-#
-# IMPORTANT: the Paystack / CapitecPay / BobGo / Resend keys are set as
-# Environment Variables on this worker in the Cloudflare dashboard. A plain
-# `wrangler deploy` REPLACES dashboard vars with only what is in this file and
-# would wipe them — the deploy workflow now runs `deploy --keep-vars` to prevent
-# that. Do not remove --keep-vars.
-
 [[routes]]
 pattern  = "banimal.co.za/api/*"
 zone_name = "banimal.co.za"
