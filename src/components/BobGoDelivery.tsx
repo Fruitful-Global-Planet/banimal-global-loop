@@ -12,7 +12,7 @@ interface Props {
   onSelect: (rate: Rate) => void
 }
 
-const API = 'https://banimal.co.za/api/delivery'
+const API = '/api/delivery'
 
 export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
   const [address, setAddress] = useState('')
@@ -80,8 +80,17 @@ export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
     onSelect(r)
   }
 
+  const qualifiesForFree = orderValueZAR >= 500 // Simplified preview
+  
   return (
     <div className="space-y-4">
+      {qualifiesForFree && (
+        <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2">
+          <div className="w-2 h-2 bg-rose-400 rounded-full mt-1.5 flex-shrink-0" />
+          <p className="text-xs text-rose-800">Free delivery on orders over R500 in South Africa</p>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-lg text-bark-800">Delivery</h3>
         <button
