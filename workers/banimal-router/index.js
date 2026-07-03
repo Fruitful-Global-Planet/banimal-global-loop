@@ -315,7 +315,20 @@ export default {
       try { body = await request.json(); } catch {}
       const { toPostalCode, orderValueZAR = 0 } = body;
 
-      if (env.BOBGO_API_KEY && toPostalCode) {
+      // Destination country: default South Africa. International if the caller
+      // sends a non-ZA country code (e.g. "US", "GB") or `international: true`.
+      const toCountry = String(body.toCountry || (body.international ? 'INTL' : 'ZA')).toUpperCase();
+      const isZA = toCountry === 'ZA';
+
+      // Free-shipping thresholds (ZAR):
+      //   • South Africa: FREE once the cart reaches R500 (carts below R500 pay).
+      //   • International: FREE once the cart is above R1500 (R1500 and below pay).
+      const FREE_THRESHOLD = isZA ? 500 : 1500;
+      const value = Number(orderValueZAR) || 0;
+      const free = isZA ? value >= FREE_THRESHOLD : value > FREE_THRESHOLD;
+
+      // Live BobGo rates (domestic South Africa only — BobGo is a ZA aggregator)
+      if (env.BOBGO_API_KEY && toPostalCode && isZA) {
         try {
           const bobgoResp = await fetch('https://api.bobgo.co.za/2010-10-01/rates', {
             method: 'POST',
@@ -328,19 +341,37 @@ export default {
           });
           if (bobgoResp.ok) {
             const data = await bobgoResp.json();
-            const rates = (data.rates||[]).map(r => ({ service: r.service_level_name||r.service, price: Math.round(r.rate||r.price||0), days: r.transit_days ? `${r.transit_days} business days` : 'See tracking' }));
-            if (rates.length > 0) return Response.json({ rates, source: 'bobgo' }, { headers: cors });
+            const bobgoRates = data.rates || [];
+            // Cheapest live rate becomes the free "Standard" option when the
+            // cart qualifies; otherwise pass through BobGo's real prices.
+            const rates = bobgoRates.map((r, i) => {
+              const realPrice = Math.round(r.rate || r.price || 0);
+              const isCheapest = realPrice === Math.min(...bobgoRates.map(x => Math.round(x.rate || x.price || 0)));
+              return {
+                service: r.service_level_name || r.service,
+                price: free && isCheapest ? 0 : realPrice,
+                days: r.transit_days ? `${r.transit_days} business days` : 'See tracking',
+              };
+            });
+            if (rates.length > 0) {
+              return Response.json({ rates, source: 'bobgo', free, free_from: FREE_THRESHOLD, country: toCountry }, { headers: cors });
+            }
           }
         } catch {}
       }
 
-      const free = Number(orderValueZAR) >= 500;
+      // Fallback flat rates — country-aware. Standard is free once the cart
+      // qualifies; Express stays a paid upgrade.
+      const base = isZA
+        ? { standard: 85,  express: 145, stdDays: '3–5 business days', expDays: '1–2 business days' }
+        : { standard: 350, express: 650, stdDays: '7–14 business days', expDays: '3–7 business days' };
+
       return Response.json({
         rates: [
-          { service: 'Standard Delivery', price: free ? 0 : 85, days: '3–5 business days' },
-          { service: 'Express Delivery', price: free ? 60 : 145, days: '1–2 business days' },
+          { service: 'Standard Delivery', price: free ? 0 : base.standard, days: base.stdDays },
+          { service: 'Express Delivery', price: base.express, days: base.expDays },
         ],
-        source: 'fallback', free_from: 500,
+        source: 'fallback', free, free_from: FREE_THRESHOLD, country: toCountry,
       }, { headers: cors });
     }
 
