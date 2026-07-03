@@ -2,31 +2,11 @@
   "name": "fruitful-banimal-storefront-static",
   "version": "3.0.0",
   "private": true,
-  "type": "module",
   "description": "Banimal3 pre-built static SPA deployed to banimal.faa.zone via Vercel",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
     "start": "npx serve dist"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.1",
-    "@tailwindcss/vite": "^4.3.1",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.3",
-    "autoprefixer": "^10.5.2",
-    "lucide-react": "^1.21.0",
-    "postcss": "^8.5.15",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.0",
-    "serve": "latest",
-    "tailwindcss": "^3.4.19",
-    "typescript": "^6.0.3",
-    "vite": "^8.1.0"
-  },
-  "dependencies": {
-    "@vercel/node": "^5.8.22"
+    "serve": "latest"
   }
 }

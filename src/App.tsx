@@ -5,14 +5,12 @@ import Checkout from '@/pages/Checkout'
 import About from '@/pages/About'
 import { AnalyticsProvider } from '@/contexts/AnalyticsContext'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { CartProvider } from '@/contexts/CartContext'
 import HoverCoupon from '@/components/HoverCoupon'
 import PushNotificationBanner from '@/components/PushNotificationBanner'
 
 export default function App() {
   return (
     <AuthProvider>
-      <CartProvider>
       <AnalyticsProvider>
         <Router>
           <PushNotificationBanner />
@@ -25,7 +23,6 @@ export default function App() {
           </Routes>
         </Router>
       </AnalyticsProvider>
-      </CartProvider>
     </AuthProvider>
   )
 }

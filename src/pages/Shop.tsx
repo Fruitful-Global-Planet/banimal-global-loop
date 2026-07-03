@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import ProductCard from '@/components/ProductCard'
+import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
-import { useCart } from '@/contexts/CartContext'
 
 const ALL_PRODUCTS: Product[] = [
   { id: 'BT001', name: 'Classic White Babygrow', price: 289, image: 'https://banimal.co.za/assets/BT001-BYDvu1g2.png', category: 'Babygrow', sizes: ['0–3m'] },
@@ -24,8 +23,8 @@ const CATS = ['All', 'Babygrow', 'Bib']
 
 export default function Shop() {
   const [cat, setCat] = useState('All')
+  const [cart, setCart] = useState<Product[]>([])
   const { getHotItems, getColdItems } = useAnalytics()
-  const { addItem, total: cartTotal } = useCart()
 
   const filtered = cat === 'All' ? ALL_PRODUCTS : ALL_PRODUCTS.filter((p) => p.category === cat)
   const hotIds = getHotItems()
@@ -37,9 +36,11 @@ export default function Shop() {
     return undefined
   }
 
+  const cartTotal = cart.reduce((s, p) => s + p.price, 0)
+
   return (
     <div className="min-h-screen">
-      <Navbar />
+      <Navbar cartCount={cart.length} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24">
         <div className="mb-12">
@@ -65,7 +66,7 @@ export default function Shop() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} onAdd={(prod) => addItem(prod)} badge={getBadge(p.id)} />
+            <ProductCard key={p.id} product={p} onAdd={(prod) => setCart((prev) => [...prev, prod])} badge={getBadge(p.id)} />
           ))}
         </div>
 
