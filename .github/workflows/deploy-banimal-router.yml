@@ -19,3 +19,35 @@ jobs:
           # (PAYSTACK_SECRET_KEY, CAPITECPAY_SECRET, BOBGO_API_KEY, RESEND_API_KEY,
           # etc.) that are set on the worker in the Cloudflare dashboard.
           command: deploy --keep-vars
+
+      # Restore/refresh the worker's secrets from GitHub Actions secrets.
+      # Each secret is only pushed if it is actually set, so a missing GitHub
+      # secret is skipped rather than overwriting the live value with a blank.
+      # Add the values under: repo Settings -> Secrets and variables -> Actions.
+      - name: Sync worker secrets from GitHub secrets
+        working-directory: workers/banimal-router
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
+          PAYSTACK_PUBLIC_KEY: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
+          CAPITECPAY_SECRET: ${{ secrets.CAPITECPAY_SECRET }}
+          BOBGO_API_KEY: ${{ secrets.BOBGO_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          set -e
+          push_secret () {
+            local name="$1"
+            local value="${!name}"
+            if [ -n "$value" ]; then
+              echo "Pushing $name to worker..."
+              printf '%s' "$value" | npx --yes wrangler@4 secret put "$name"
+            else
+              echo "Skipping $name (no GitHub secret set)."
+            fi
+          }
+          push_secret PAYSTACK_SECRET_KEY
+          push_secret PAYSTACK_PUBLIC_KEY
+          push_secret CAPITECPAY_SECRET
+          push_secret BOBGO_API_KEY
+          push_secret RESEND_API_KEY
