@@ -2,6 +2,7 @@
   "buildCommand": "echo 'pre-built Banimal2 static site with serverless API'",
   "installCommand": "true",
   "outputDirectory": "dist",
+  "nodeVersion": "20.x",
   "functions": {
     "api/**/*.ts": {
       "runtime": "@vercel/node@3.1.0"
