@@ -309,6 +309,79 @@ export default {
       return Response.json(JSON.parse(order), { headers: cors });
     }
 
+    // ── Shipping rates (checkout front-end) ───────────────────────────────
+    // The live checkout POSTs here with { address, city, postal, province,
+    // country, itemCount, cartValueZar } and expects:
+    //   { rates: [ { id, name, amountZar, courier, estimatedDays } ] }
+    if (pathname === '/api/shipping/rates' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch {}
+
+      const postal = String(body.postal || body.toPostalCode || '').trim();
+      const country = String(body.country || '').trim();
+      const cartValueZar = Number(body.cartValueZar ?? body.orderValueZAR ?? 0) || 0;
+
+      // South Africa if the country reads as ZA/RSA/South Africa, if it's
+      // blank/placeholder (default in the form), or if the postal is a
+      // 4-digit SA code. Anything else is treated as international.
+      const c = country.toLowerCase();
+      const looksZA = c === '' || c === 'country' || c === 'za' || c === 'rsa'
+        || c.includes('south africa') || /^\d{4}$/.test(postal);
+      const isZA = looksZA;
+
+      // Free-shipping thresholds (ZAR):
+      //   • South Africa: FREE once the cart reaches R500 (below R500 pays).
+      //   • International: FREE once the cart is above R1500 (R1500 and below pays).
+      const FREE_THRESHOLD = isZA ? 500 : 1500;
+      const free = isZA ? cartValueZar >= FREE_THRESHOLD : cartValueZar > FREE_THRESHOLD;
+
+      // Try live BobGo rates for domestic SA orders with a valid postal code.
+      if (env.BOBGO_API_KEY && isZA && /^\d{4}$/.test(postal)) {
+        try {
+          const bobgoResp = await fetch('https://api.bobgo.co.za/2010-10-01/rates', {
+            method: 'POST',
+            headers: { 'Authorization': `Basic ${btoa(env.BOBGO_API_KEY + ':')}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to_address: { code: postal, country: 'ZA' },
+              from_address: { code: env.BOBGO_FROM_POSTAL || '0044', country: 'ZA' },
+              parcels: [{ weight: 1, length: 30, width: 20, height: 10 }],
+            }),
+          });
+          if (bobgoResp.ok) {
+            const data = await bobgoResp.json();
+            const bobgoRates = data.rates || [];
+            if (bobgoRates.length > 0) {
+              const prices = bobgoRates.map(x => Math.round(x.rate || x.price || 0));
+              const cheapest = Math.min(...prices);
+              const rates = bobgoRates.map((r, i) => {
+                const realPrice = Math.round(r.rate || r.price || 0);
+                return {
+                  id: r.service_level_code || r.service || `bobgo-${i}`,
+                  name: r.service_level_name || r.service || 'Delivery',
+                  amountZar: free && realPrice === cheapest ? 0 : realPrice,
+                  courier: r.courier_name || 'BobGo',
+                  estimatedDays: r.transit_days ? `${r.transit_days} business days` : 'See tracking',
+                };
+              });
+              return Response.json({ rates, source: 'bobgo', free, free_from: FREE_THRESHOLD, country: isZA ? 'ZA' : 'INTL' }, { headers: cors });
+            }
+          }
+        } catch {}
+      }
+
+      // Fallback flat rates — country-aware. Standard becomes free once the
+      // cart qualifies; Express is a paid upgrade.
+      const base = isZA
+        ? { standard: 85,  express: 145, stdDays: '3–5 business days', expDays: '1–2 business days' }
+        : { standard: 350, express: 650, stdDays: '7–14 business days', expDays: '3–7 business days' };
+
+      const rates = [
+        { id: 'standard', name: 'Standard Delivery', amountZar: free ? 0 : base.standard, courier: 'BobGo', estimatedDays: base.stdDays },
+        { id: 'express',  name: 'Express Delivery',  amountZar: base.express, courier: 'BobGo', estimatedDays: base.expDays },
+      ];
+      return Response.json({ rates, source: 'fallback', free, free_from: FREE_THRESHOLD, country: isZA ? 'ZA' : 'INTL' }, { headers: cors });
+    }
+
     // ── Delivery rates ────────────────────────────────────────────────────
     if (pathname === '/api/delivery/rates' && request.method === 'POST') {
       let body = {};
