@@ -53,8 +53,8 @@ export default function About() {
               <a href="mailto:hello@banimal.co.za" className="hover:text-cream-100 transition-colors">hello@banimal.co.za</a>
             </div>
             <div>
-              <p className="label-tag text-cream-500 mb-1">Orders &amp; updates</p>
-              <a href="mailto:mud@banimal.co.za" className="hover:text-cream-100 transition-colors">mud@banimal.co.za</a>
+              <p className="label-tag text-cream-500 mb-1">Returns &amp; refunds</p>
+              <a href="mailto:kindrefund@banimal.co.za" className="hover:text-cream-100 transition-colors">kindrefund@banimal.co.za</a>
             </div>
           </div>
         </div>
