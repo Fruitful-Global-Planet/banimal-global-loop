@@ -78,15 +78,30 @@ export default function Checkout() {
 
               <CharitableGiving orderTotalZAR={total} />
 
+              <div className="grid gap-3 rounded-2xl border border-cream-200 bg-white/40 p-4 text-sm">
+                <div>
+                  <p className="font-medium text-bark-800">Secure Paystack checkout</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">Card, Apple Pay, and EFT options stay inside the proven Paystack flow.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-bark-800">Delivery-ready details</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">Your selected delivery option and email stay connected for fulfilment follow-up.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-bark-800">Purpose built in</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">15.01% of every order flows into Banimal's giving loop.</p>
+                </div>
+              </div>
+
               <a
                 href={`https://banimal.co.za/checkout?source=faa&total=${total}&delivery=${delivery?.service || ''}`}
                 className="btn-primary w-full justify-center rounded-xl mt-2 text-sm"
               >
-                Pay with Paystack
+                Pay securely with Paystack
               </a>
 
-              <p className="text-xs text-center text-bark-700/40 mt-2">
-                Secure checkout powered by Paystack
+              <p className="text-xs text-center leading-relaxed text-bark-700/50 mt-2">
+                No payment details are stored by Banimal. Keep your Paystack reference for support.
               </p>
             </div>
           </div>
