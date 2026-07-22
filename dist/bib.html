@@ -291,7 +291,68 @@
       gap: 0.4rem;
       font-size: 0.73rem;
       color: var(--muted);
+      text-align: center;
+      line-height: 1.45;
     }
+
+    .payment-methods {
+      border: 1px solid var(--cream-dark);
+      border-radius: 1rem;
+      padding: 0.65rem;
+      display: grid;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.35);
+    }
+    .payment-methods legend {
+      padding: 0 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--bark-light);
+    }
+    .payment-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.65rem;
+      border: 1px solid var(--cream-dark);
+      border-radius: 0.8rem;
+      background: var(--warm-white);
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .payment-option:has(input:checked) {
+      border-color: var(--sage);
+      background: #f4f7ef;
+    }
+    .payment-option input { margin-top: 0.15rem; accent-color: var(--sage-dark); }
+    .payment-copy { display: grid; gap: 0.15rem; }
+    .payment-title { font-size: 0.85rem; font-weight: 600; color: var(--bark); }
+    .payment-detail { font-size: 0.73rem; color: var(--muted); line-height: 1.35; }
+    .payment-badge {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 0.12rem 0.45rem;
+      background: var(--cream);
+      color: var(--bark-light);
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .payment-warning {
+      display: none;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid #e0c48c;
+      background: #fff8e8;
+      border-radius: 0.75rem;
+      color: #6b4f1d;
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+    .payment-warning.show { display: block; }
 
     footer {
       text-align: center;
@@ -457,7 +518,7 @@
           <span class="price-note">test item</span>
         </div>
 
-        <form id="checkout-form" onsubmit="handlePaystack(event)">
+        <form id="checkout-form" onsubmit="handlePayment(event)">
           <div class="checkout-form">
             <label class="form-label" for="email">Your email address</label>
             <input
@@ -470,18 +531,46 @@
               autocomplete="email"
               inputmode="email"
             />
+            <fieldset class="payment-methods" aria-label="Payment method">
+              <legend>Payment method</legend>
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="paystack-card" checked onchange="updatePaymentMethod()" />
+                <span class="payment-copy">
+                  <span class="payment-title">Card with Paystack</span>
+                  <span class="payment-detail">Working card checkout. Keep this as the fastest option.</span>
+                </span>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="paystack-alt" onchange="updatePaymentMethod()" />
+                <span class="payment-copy">
+                  <span class="payment-title">Paystack alternatives</span>
+                  <span class="payment-detail">Use Paystack checkout for available wallet, EFT, bank transfer, or CapitecPay options.</span>
+                </span>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="snapscan" onchange="updatePaymentMethod()" />
+                <span class="payment-copy">
+                  <span class="payment-title">SnapScan QR</span>
+                  <span class="payment-badge">Setup required</span>
+                  <span class="payment-detail">Popular in South Africa. Needs the Banimal SnapScan merchant QR/link before it can take live payments.</span>
+                </span>
+              </label>
+            </fieldset>
+            <p class="payment-warning" id="snapscan-warning">
+              SnapScan is selected, but no live SnapScan merchant payment link is configured yet. Use Paystack for this order, then add the SnapScan merchant QR/link to activate this option.
+            </p>
             <button type="submit" class="btn-pay" id="pay-btn">
               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
-              Pay R5.00 with Paystack
+              Pay R5.00 with Paystack card
             </button>
-            <p class="secure-note">
+            <p class="secure-note" id="secure-note">
               <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <rect x="3" y="11" width="18" height="11" rx="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              Secured by Paystack · Card · Apple Pay · EFT
+              Secured by Paystack · Card checkout is live
             </p>
           </div>
         </form>
@@ -514,16 +603,49 @@
     // Get it from: paystack.com/business/settings → API Keys & Webhooks
     var PAYSTACK_PK = 'pk_live_6aae7ee4a532694147cb36ee56780eb49a2af5fb';
 
-    function setBtn(loading) {
-      var btn = document.getElementById('pay-btn');
-      btn.disabled = loading;
-      btn.innerHTML = loading
-        ? 'Opening Paystack…'
-        : '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pay R5.00 with Paystack';
+    function selectedPaymentMethod() {
+      var selected = document.querySelector('input[name="payment_method"]:checked');
+      return selected ? selected.value : 'paystack-card';
     }
 
-    function handlePaystack(e) {
+    function paymentButtonLabel(method) {
+      if (method === 'paystack-alt') return 'Continue to Paystack options';
+      if (method === 'snapscan') return 'SnapScan setup required';
+      return 'Pay R5.00 with Paystack card';
+    }
+
+    function paymentNote(method) {
+      if (method === 'paystack-alt') return 'Paystack will show the available non-card options enabled on the merchant account.';
+      if (method === 'snapscan') return 'SnapScan needs a live merchant QR/link before checkout can process this payment.';
+      return 'Secured by Paystack · Card checkout is live';
+    }
+
+    function setBtn(loading) {
+      var btn = document.getElementById('pay-btn');
+      var method = selectedPaymentMethod();
+      btn.disabled = loading || method === 'snapscan';
+      btn.innerHTML = loading
+        ? 'Opening Paystack…'
+        : '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ' + paymentButtonLabel(method);
+    }
+
+    function updatePaymentMethod() {
+      var method = selectedPaymentMethod();
+      var warning = document.getElementById('snapscan-warning');
+      var note = document.getElementById('secure-note');
+      warning.classList.toggle('show', method === 'snapscan');
+      note.lastChild.textContent = ' ' + paymentNote(method);
+      setBtn(false);
+    }
+
+    function handlePayment(e) {
       e.preventDefault();
+      var method = selectedPaymentMethod();
+      if (method === 'snapscan') {
+        updatePaymentMethod();
+        return;
+      }
+
       var email = document.getElementById('email').value.trim();
       if (!email) return;
 
@@ -555,6 +677,8 @@
 
       handler.openIframe();
     }
+
+    updatePaymentMethod();
   </script>
 
 </body>
