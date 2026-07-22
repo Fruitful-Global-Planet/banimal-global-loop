@@ -291,6 +291,43 @@
       gap: 0.4rem;
       font-size: 0.73rem;
       color: var(--muted);
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    .trust-stack {
+      display: grid;
+      gap: 0.6rem;
+      margin-top: 0.25rem;
+    }
+    .trust-card {
+      display: grid;
+      gap: 0.18rem;
+      padding: 0.72rem 0.85rem;
+      border: 1px solid var(--cream-dark);
+      border-radius: 0.85rem;
+      background: rgba(255,255,255,0.46);
+    }
+    .trust-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--bark);
+      letter-spacing: 0.02em;
+    }
+    .trust-copy {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .checkout-reassurance {
+      margin-top: 0.25rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 0.85rem;
+      background: #f4f7ef;
+      color: var(--sage-dark);
+      font-size: 0.74rem;
+      line-height: 1.5;
+      border: 1px solid rgba(122,158,126,0.28);
     }
 
     footer {
@@ -383,6 +420,7 @@
       .price-amount { font-size: 2rem; }
     }
   </style>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -483,6 +521,21 @@
               </svg>
               Secured by Paystack · Card · Apple Pay · EFT
             </p>
+            <div class="trust-stack" aria-label="Checkout reassurance">
+              <div class="trust-card">
+                <span class="trust-title">Fast confirmation</span>
+                <span class="trust-copy">Your payment reference appears immediately after Paystack confirms the charge.</span>
+              </div>
+              <div class="trust-card">
+                <span class="trust-title">Delivery-ready</span>
+                <span class="trust-copy">We use your checkout email to keep the order, fulfilment, and delivery follow-up connected.</span>
+              </div>
+              <div class="trust-card">
+                <span class="trust-title">Simple support</span>
+                <span class="trust-copy">Returns, refunds, and shipping help stay linked from the Banimal footer.</span>
+              </div>
+            </div>
+            <p class="checkout-reassurance">15.01% of this order remains visible in the giving loop, so every purchase has a traceable purpose beyond the bib.</p>
           </div>
         </form>
       </div>
@@ -495,7 +548,7 @@
     <div class="overlay-card">
       <div class="overlay-icon">🌿</div>
       <h2 class="overlay-title">Payment successful!</h2>
-      <p class="overlay-body">Your Banimal Mini Bib order has been received. Check your inbox for confirmation.</p>
+      <p class="overlay-body">Your Banimal Mini Bib order has been received. Keep the reference below for delivery and support follow-up.</p>
       <p class="overlay-ref" id="success-ref"></p>
       <p class="overlay-giving">15.01% of this purchase flows into Banimal's giving loop.</p>
       <button class="btn-close" onclick="document.getElementById('success-overlay').classList.remove('show')">
