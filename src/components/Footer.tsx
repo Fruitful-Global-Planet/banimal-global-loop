@@ -24,6 +24,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-cream-400">
               <li><Link to="/about" className="hover:text-cream-200 transition-colors">About</Link></li>
               <li><a href="mailto:hello@banimal.co.za" className="hover:text-cream-200 transition-colors">Contact</a></li>
+              <li><a href="/returns-refund-policy" className="hover:text-cream-200 transition-colors">Returns &amp; Refund Policy</a></li>
               <li><a href="https://banimal.co.za" className="hover:text-cream-200 transition-colors">banimal.co.za</a></li>
             </ul>
           </div>
@@ -33,6 +34,7 @@ export default function Footer() {
               <li><a href="https://instagram.com/banimalza" target="_blank" rel="noreferrer" className="hover:text-cream-200 transition-colors">Instagram</a></li>
               <li><a href="https://facebook.com/banimalza" target="_blank" rel="noreferrer" className="hover:text-cream-200 transition-colors">Facebook</a></li>
               <li><a href="https://tiktok.com/@banimalza" target="_blank" rel="noreferrer" className="hover:text-cream-200 transition-colors">TikTok</a></li>
+              <li><a href="mailto:kindrefund@banimal.co.za" className="hover:text-cream-200 transition-colors">Returns &amp; refunds</a></li>
             </ul>
           </div>
         </div>
