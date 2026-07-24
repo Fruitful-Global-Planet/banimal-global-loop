@@ -3,31 +3,113 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
     <title>Banimal — 100% Cotton Babygrows &amp; Bibs | South African Baby Brand</title>
-    <meta name="description" content="Banimal crafts premium 100% cotton babygrows and bandana bibs — thoughtfully designed baby essentials from South Africa, shipping worldwide. Soft, breathable, beautifully made." />
+    <meta
+      name="description"
+      content="Banimal crafts premium 100% cotton babygrows and bandana bibs — thoughtfully designed baby essentials from South Africa, shipping worldwide. Soft, breathable, beautifully made."
+    />
     <meta name="theme-color" content="#f6f1e7" />
     <meta name="author" content="Banimal" />
-    <link rel="canonical" href="https://banimal.faa.zone/" />
-    <link rel="icon" type="image/x-icon" href="https://banimal.co.za/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="https://banimal.co.za/apple-touch-icon.png" />
+    <link rel="canonical" href="https://banimal.co.za/" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Banimal" />
     <meta property="og:title" content="Banimal — 100% Cotton Babygrows &amp; Bibs" />
-    <meta property="og:description" content="Premium 100% cotton baby essentials, thoughtfully designed in South Africa and shipped worldwide." />
-    <meta property="og:url" content="https://banimal.faa.zone/" />
+    <meta
+      property="og:description"
+      content="Premium 100% cotton baby essentials, thoughtfully designed in South Africa and shipped worldwide."
+    />
+    <meta property="og:url" content="https://banimal.co.za/" />
     <meta property="og:image" content="https://banimal.co.za/og-image.png" />
     <meta property="og:locale" content="en_ZA" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Banimal — 100% Cotton Babygrows &amp; Bibs" />
-    <meta name="twitter:description" content="Premium 100% cotton baby essentials, thoughtfully designed in South Africa and shipped worldwide." />
+    <meta
+      name="twitter:description"
+      content="Premium 100% cotton baby essentials, thoughtfully designed in South Africa and shipped worldwide."
+    />
     <meta name="twitter:image" content="https://banimal.co.za/og-image.png" />
-    <link rel="manifest" href="/manifest.json" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter:wght@300..600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/assets/index-DS3q8N91.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-BPi5ZGTk.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-DeYYG3nE.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Inter:wght@300..700&family=Noto+Sans+Arabic:wght@400..700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Banimal — dark mode (warm charcoal, NYC-precise) + system-aware, persisted -->
+    <style id="banimal-theme-polish">
+      html { color-scheme: light; }
+      html.dark { color-scheme: dark; }
+      html, body { transition: background-color .45s cubic-bezier(.4,0,.2,1), color .45s cubic-bezier(.4,0,.2,1); }
+      html.dark img:not([src*=".svg"]) { filter: brightness(.94) contrast(1.02); }
+      #banimal-theme-toggle {
+        position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 2147483000;
+        width: 46px; height: 46px; display: grid; place-items: center;
+        border-radius: 9999px; cursor: pointer; padding: 0;
+        background: hsl(var(--card) / .72);
+        border: 1px solid hsl(var(--border));
+        color: hsl(var(--foreground));
+        -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
+        box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 8px 24px -8px rgba(0,0,0,.22);
+        transition: transform .35s cubic-bezier(.34,1.56,.64,1), background .45s ease, border-color .45s ease, box-shadow .45s ease;
+      }
+      #banimal-theme-toggle:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 2px 4px rgba(0,0,0,.10), 0 14px 34px -10px rgba(0,0,0,.30); }
+      #banimal-theme-toggle:active { transform: translateY(0) scale(.97); }
+      #banimal-theme-toggle:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+      #banimal-theme-toggle svg { width: 20px; height: 20px; transition: opacity .4s ease, transform .5s cubic-bezier(.4,0,.2,1); }
+      #banimal-theme-toggle .bt-sun { position: absolute; opacity: 1; transform: rotate(0) scale(1); }
+      #banimal-theme-toggle .bt-moon { position: absolute; opacity: 0; transform: rotate(-90deg) scale(.6); }
+      html.dark #banimal-theme-toggle .bt-sun { opacity: 0; transform: rotate(90deg) scale(.6); }
+      html.dark #banimal-theme-toggle .bt-moon { opacity: 1; transform: rotate(0) scale(1); }
+      @media (prefers-reduced-motion: reduce) { html, body, #banimal-theme-toggle, #banimal-theme-toggle svg { transition: none !important; } }
+    </style>
+    <script>
+      (function () {
+        var KEY = 'banimal-theme';
+        var root = document.documentElement;
+        function systemDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+        function resolve(){ var s = localStorage.getItem(KEY); return s ? s === 'dark' : systemDark(); }
+        function apply(dark){ root.classList.toggle('dark', !!dark); }
+        // Apply before first paint — no flash.
+        apply(resolve());
+        // Follow the OS while the user hasn't made an explicit choice.
+        if (window.matchMedia) {
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+            if (!localStorage.getItem(KEY)) apply(e.matches);
+          });
+        }
+        function mount(){
+          if (document.getElementById('banimal-theme-toggle')) return;
+          var btn = document.createElement('button');
+          btn.id = 'banimal-theme-toggle';
+          btn.type = 'button';
+          btn.setAttribute('aria-label', 'Toggle dark mode');
+          btn.setAttribute('title', 'Toggle theme');
+          btn.innerHTML =
+            '<svg class="bt-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.6M12 19v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.4 12H5M19 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></svg>' +
+            '<svg class="bt-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8 8 0 1 1 9.8 3.5a6.4 6.4 0 0 0 10.7 10.7Z"/></svg>';
+          btn.addEventListener('click', function () {
+            var dark = !root.classList.contains('dark');
+            apply(dark);
+            localStorage.setItem(KEY, dark ? 'dark' : 'light');
+          });
+          document.body.appendChild(btn);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
+        else mount();
+      })();
+    </script>
+
+    <script type="module" crossorigin src="./assets/index-BANv26-checkout-fix.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DMs94wb6.css">
   </head>
   <body>
     <div id="root"></div>
