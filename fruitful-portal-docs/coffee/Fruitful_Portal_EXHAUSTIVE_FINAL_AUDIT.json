@@ -1,0 +1,650 @@
+{
+    "org": "Fruitful Holdings (Pty) Ltd",
+    "fleet_metadata": {
+        "target": 300,
+        "status": "PRODUCTION-FINAL-ENHANCED"
+    },
+    "master_inventory_registry": {
+        "01_product_ingredients": [
+            {
+                "item": "Coffee Beans (Artisan Espresso)",
+                "uom": "kg",
+                "threshold": 5,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "UHT Full Cream Milk",
+                "uom": "L",
+                "threshold": 10,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "UHT Low Fat Milk",
+                "uom": "L",
+                "threshold": 5,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Auto-Froth Milk Powder",
+                "uom": "kg",
+                "threshold": 2,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Hot Chocolate Powder",
+                "uom": "kg",
+                "threshold": 2,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Vanilla Syrup (Artisan)",
+                "uom": "L",
+                "threshold": 1,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Caramel Syrup (Artisan)",
+                "uom": "L",
+                "threshold": 1,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Hazelnut Syrup (Artisan)",
+                "uom": "L",
+                "threshold": 1,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "White Sugar Sachets",
+                "uom": "1000ct",
+                "threshold": 1,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Brown Sugar Sachets",
+                "uom": "1000ct",
+                "threshold": 1,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Sweetener Sachets",
+                "uom": "1000ct",
+                "threshold": 1,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Water Filter Cartridges (Jura)",
+                "uom": "unit",
+                "threshold": 1,
+                "freq": "monthly",
+                "cost_type": "variable"
+            }
+        ],
+        "02_customer_packaging": [
+            {
+                "item": "Branded Paper Cup 8oz",
+                "uom": "sleeve",
+                "threshold": 10,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Branded Paper Cup 10oz",
+                "uom": "sleeve",
+                "threshold": 10,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Branded Paper Cup 12oz",
+                "uom": "sleeve",
+                "threshold": 10,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Thermal Lid Black (8oz)",
+                "uom": "pack",
+                "threshold": 5,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Thermal Lid White (10/12oz)",
+                "uom": "pack",
+                "threshold": 5,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Thermal Cup Sleeves",
+                "uom": "pack",
+                "threshold": 10,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Wooden Stirrers",
+                "uom": "500ct",
+                "threshold": 2,
+                "freq": "monthly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Serviettes (2-ply)",
+                "uom": "pack",
+                "threshold": 5,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Branded Napkin Dispensers",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "permanent",
+                "cost_type": "asset"
+            },
+            {
+                "item": "Branded Takeaway Carrier Trays",
+                "uom": "pack",
+                "threshold": 5,
+                "freq": "monthly",
+                "cost_type": "variable"
+            }
+        ],
+        "03_facility_hygiene_and_cleaning": [
+            {
+                "item": "Jura Cleaning Tablets",
+                "uom": "tablet",
+                "threshold": 50,
+                "freq": "daily",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Milk Line Detergent",
+                "uom": "L",
+                "threshold": 2,
+                "freq": "weekly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Descaling Solution",
+                "uom": "L",
+                "threshold": 1,
+                "freq": "quarterly",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Handy Andy Surface Cleaner",
+                "uom": "L",
+                "threshold": 2,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Glass/Window Cleaner",
+                "uom": "L",
+                "threshold": 1,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Heavy-Duty Degreaser",
+                "uom": "L",
+                "threshold": 1,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Microfiber Cloths (4-Color Set)",
+                "uom": "pack",
+                "threshold": 2,
+                "freq": "bi-monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Kitchen Paper Towel Rolls",
+                "uom": "pack",
+                "threshold": 5,
+                "freq": "weekly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Scrubbing Sponges (Non-Abrasive)",
+                "uom": "pack",
+                "threshold": 2,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Heavy Duty Bin Liners (S/M/L)",
+                "uom": "roll",
+                "threshold": 3,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Hand Sanitizer (High-Alcohol)",
+                "uom": "L",
+                "threshold": 2,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Surface Sanitizer (SABS)",
+                "uom": "L",
+                "threshold": 2,
+                "freq": "monthly",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Industrial Floor Broom & Dustpan",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "annual",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Industrial Mop & Bucket Set",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "annual",
+                "cost_type": "facility"
+            }
+        ],
+        "04_it_infrastructure_and_security": [
+            {
+                "item": "4G/LTE/5G Industrial Router",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "annual",
+                "cost_type": "asset"
+            },
+            {
+                "item": "Redundant SIM Cards (5G/4G)",
+                "uom": "unit",
+                "threshold": 5,
+                "freq": "as_needed",
+                "cost_type": "variable"
+            },
+            {
+                "item": "Industrial UPS (1KVA)",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "annual",
+                "cost_type": "asset"
+            },
+            {
+                "item": "Surge Protection/Multi-plug",
+                "uom": "unit",
+                "threshold": 2,
+                "freq": "annual",
+                "cost_type": "facility"
+            },
+            {
+                "item": "CAT6 Shielded Ethernet Cable",
+                "uom": "m",
+                "threshold": 20,
+                "freq": "as_needed",
+                "cost_type": "facility"
+            },
+            {
+                "item": "Tamper-proof Torx Screw Set",
+                "uom": "kit",
+                "threshold": 1,
+                "freq": "permanent",
+                "cost_type": "tool"
+            },
+            {
+                "item": "Multi-meter (Calibrated)",
+                "uom": "unit",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "tool"
+            },
+            {
+                "item": "CCTV Standalone Unit",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "annual",
+                "cost_type": "asset"
+            },
+            {
+                "item": "Cloud Telemetry/IoT License",
+                "uom": "sub",
+                "threshold": 0,
+                "freq": "monthly",
+                "cost_type": "fixed"
+            },
+            {
+                "item": "VPN/Static IP Service",
+                "uom": "sub",
+                "threshold": 0,
+                "freq": "monthly",
+                "cost_type": "fixed"
+            }
+        ],
+        "05_machine_maintenance_repairs": [
+            {
+                "item": "Jura Grinder Burrs (Spare)",
+                "uom": "set",
+                "threshold": 2,
+                "freq": "annual",
+                "cost_type": "repair"
+            },
+            {
+                "item": "O-Rings/Seals Kit (Jura)",
+                "uom": "kit",
+                "threshold": 3,
+                "freq": "semi-annual",
+                "cost_type": "repair"
+            },
+            {
+                "item": "Dispensing Nozzle (Spare)",
+                "uom": "unit",
+                "threshold": 2,
+                "freq": "semi-annual",
+                "cost_type": "repair"
+            },
+            {
+                "item": "Internal LED Lighting Strips",
+                "uom": "unit",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "repair"
+            },
+            {
+                "item": "Standardised Toolkits",
+                "uom": "kit",
+                "threshold": 1,
+                "freq": "as_needed",
+                "cost_type": "tool"
+            }
+        ],
+        "06_compliance_legal_and_permits": [
+            {
+                "item": "Municipal Trading Permits",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "H&S Act Compliance Register",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Public Liability Insurance Policy",
+                "uom": "policy",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "COIDA/Workmen\u2019s Comp Reg",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "VAT Registration Certificate",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "CIPC Entity Documents",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Fire Safety Certificate",
+                "uom": "cert",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Landlord Lease Agreement",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "as_needed",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Food Handler Medical Clearance",
+                "uom": "cert",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Hazardous Substances (MSDS) Register",
+                "uom": "file",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Annual Franchise Disclosure",
+                "uom": "doc",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            }
+        ],
+        "07_administration_and_finance": [
+            {
+                "item": "Daily Cash Float Bags",
+                "uom": "bag",
+                "threshold": 20,
+                "freq": "weekly",
+                "cost_type": "finance"
+            },
+            {
+                "item": "Tamper-evident Cash Seals",
+                "uom": "pack",
+                "threshold": 5,
+                "freq": "weekly",
+                "cost_type": "finance"
+            },
+            {
+                "item": "Receipt Thermal Rolls (Bulk)",
+                "uom": "case",
+                "threshold": 2,
+                "freq": "quarterly",
+                "cost_type": "finance"
+            },
+            {
+                "item": "Operational Logbooks",
+                "uom": "book",
+                "threshold": 5,
+                "freq": "quarterly",
+                "cost_type": "admin"
+            },
+            {
+                "item": "Stapler & Staples (Bulk)",
+                "uom": "kit",
+                "threshold": 1,
+                "freq": "as_needed",
+                "cost_type": "admin"
+            },
+            {
+                "item": "Paperclips & Binder Clips (Bulk)",
+                "uom": "box",
+                "threshold": 2,
+                "freq": "as_needed",
+                "cost_type": "admin"
+            },
+            {
+                "item": "Ballpoint Pens (Blue/Black Bulk)",
+                "uom": "pack",
+                "threshold": 2,
+                "freq": "quarterly",
+                "cost_type": "admin"
+            },
+            {
+                "item": "Archive Folders (7-Year Retent.)",
+                "uom": "unit",
+                "threshold": 10,
+                "freq": "annual",
+                "cost_type": "admin"
+            },
+            {
+                "item": "Petty Cash Voucher Booklets",
+                "uom": "book",
+                "threshold": 5,
+                "freq": "quarterly",
+                "cost_type": "finance"
+            },
+            {
+                "item": "Corporate Credit Card Portal",
+                "uom": "sub",
+                "threshold": 0,
+                "freq": "monthly",
+                "cost_type": "fixed"
+            }
+        ],
+        "08_human_resources_and_ppe": [
+            {
+                "item": "Branded Polo Shirts",
+                "uom": "unit",
+                "threshold": 10,
+                "freq": "annual",
+                "cost_type": "hr"
+            },
+            {
+                "item": "Branded Staff Aprons",
+                "uom": "unit",
+                "threshold": 10,
+                "freq": "annual",
+                "cost_type": "hr"
+            },
+            {
+                "item": "Branded Staff Caps",
+                "uom": "unit",
+                "threshold": 10,
+                "freq": "annual",
+                "cost_type": "hr"
+            },
+            {
+                "item": "Staff ID Badges & Lanyards",
+                "uom": "kit",
+                "threshold": 5,
+                "freq": "as_needed",
+                "cost_type": "hr"
+            },
+            {
+                "item": "Safety Shoes (Steel-toe)",
+                "uom": "pair",
+                "threshold": 2,
+                "freq": "annual",
+                "cost_type": "hr"
+            },
+            {
+                "item": "High-Visibility Vests",
+                "uom": "unit",
+                "threshold": 2,
+                "freq": "annual",
+                "cost_type": "hr"
+            },
+            {
+                "item": "First Aid Kit (H&S Compliant)",
+                "uom": "kit",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "legal"
+            },
+            {
+                "item": "Staff Training/Competency Logs",
+                "uom": "doc",
+                "threshold": 0,
+                "freq": "monthly",
+                "cost_type": "hr"
+            },
+            {
+                "item": "Biometric Attendance Sys License",
+                "uom": "sub",
+                "threshold": 0,
+                "freq": "monthly",
+                "cost_type": "fixed"
+            }
+        ],
+        "09_logistics_and_supply_chain": [
+            {
+                "item": "Fleet/Fuel Cards",
+                "uom": "card",
+                "threshold": 1,
+                "freq": "as_needed",
+                "cost_type": "logistics"
+            },
+            {
+                "item": "Loading Trolley (Hand Truck)",
+                "uom": "unit",
+                "threshold": 0,
+                "freq": "annual",
+                "cost_type": "logistics"
+            },
+            {
+                "item": "Shipping Pallets",
+                "uom": "unit",
+                "threshold": 5,
+                "freq": "as_needed",
+                "cost_type": "logistics"
+            },
+            {
+                "item": "Shipping Labels (Bulk Roll)",
+                "uom": "roll",
+                "threshold": 2,
+                "freq": "monthly",
+                "cost_type": "logistics"
+            },
+            {
+                "item": "High-Security Padlocks",
+                "uom": "unit",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "asset"
+            },
+            {
+                "item": "Master Key/RFID Access Tag",
+                "uom": "set",
+                "threshold": 1,
+                "freq": "annual",
+                "cost_type": "asset"
+            },
+            {
+                "item": "Vehicle Mileage/Logbooks",
+                "uom": "book",
+                "threshold": 2,
+                "freq": "quarterly",
+                "cost_type": "logistics"
+            },
+            {
+                "item": "Toll-gate (e-Tag) Transponders",
+                "uom": "unit",
+                "threshold": 1,
+                "freq": "as_needed",
+                "cost_type": "logistics"
+            }
+        ]
+    }
+}

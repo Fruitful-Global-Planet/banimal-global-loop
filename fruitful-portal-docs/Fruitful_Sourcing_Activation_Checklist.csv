@@ -1,0 +1,13 @@
+Category,Item/Target,Supplier Status,"Authoritative Spec (HAVE)","Agent Action (NEED)"
+Kiosk Hardware,1 pc Sample (shipping),Guangzhou Welink Smart Tech,Welink WL20260325 PI,"Track arrival; verify 32""/43"" screen res"
+Kiosk Hardware,Fleet Target: 300 units,TBD (Welink vs Alt),China Order Analysis,Find 2 alternative solar-kiosk suppliers for price/spec comparison
+Consumables,Artisan Coffee Beans,Fantastico SA (Auth),Coffee Trading Pack,Confirm SCA Score 80+ / Moisture 9-12% on first lot
+Consumables,Branded Cups (8/10/12oz),TBD,Fruitful CI Guide v04,Find factory for branded double-wall cups; MOQ 50k
+Staff Apparel,Uniform Line (Caps to Shoes),TBD,Staff & Ops Spec (2026-2030),"Source suppliers for Vellies (embossed), Bomber Jackets, and Polo Shirts"
+Staff Apparel,Safety Shoes (Steel-toe),TBD,Audit Registry,Source branded SABS-approved safety footwear
+IT / Tech,Rugged 10" Staff Tablets,TBD,Staff & Ops Spec,"Find industrial Android tablets with 12hr+ battery"
+IT / Tech,Digital e-Ink Nametags,TBD,base44 IAM Spec,Source e-Ink display tags with NFC/RFID and API sync
+IT / Tech,Digital Writing Pads,TBD,Staff & Ops Spec,Source e-Ink tablets for clean-syncing logbooks
+IT / Tech,Industrial 5G Routers,TBD,Audit Registry,Source high-temp rugged 5G/LTE routers with external antenna
+Facilities,Jura Cleaning Tablets,Jura / Generic,Audit Registry,Compare OEM vs verified generic cost for bulk (300 portals)
+Facilities,Biometric Attendance Sys,TBD,Audit Registry,Source cloud-synced facial/fingerprint hardware
