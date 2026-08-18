@@ -1,5 +1,5 @@
 /**
- * Banimal Care Loop — Paystack Webhook Handler
+ * Banimal Giving Loop — Paystack Webhook Handler
  * Handles: charge.success → Zoho CRM + Zoho Invoice
  */
 const crypto = require('crypto');

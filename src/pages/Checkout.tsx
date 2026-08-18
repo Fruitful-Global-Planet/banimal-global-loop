@@ -89,7 +89,7 @@ export default function Checkout() {
                 </div>
                 <div>
                   <p className="font-medium text-bark-800">Purpose built in</p>
-                  <p className="text-xs leading-relaxed text-bark-700/60">15.01% of every order flows into Banimal's giving loop.</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">15.01% of every order flows into the Banimal Giving Loop.</p>
                 </div>
               </div>
 
