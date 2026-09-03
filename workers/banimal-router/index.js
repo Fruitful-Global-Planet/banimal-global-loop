@@ -1,8 +1,11 @@
 /**
  * Banimal Router v5 — Cloudflare Worker
  * banimal.co.za/api/* + banimal.co.za/webhooks/* + banimal.co.za/port/5000/*
+ * + banimal.co.za/auth/* (see lib/oauth.js)
  * Payments: Paystack + CapitecPay
  */
+
+import { handleAuthRequest } from './lib/oauth.js';
 
 async function verifyHmac(body, signature, secret) {
   // Fail closed: a webhook with no signature, or arriving while no secret is
@@ -47,6 +50,12 @@ export default {
     };
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
+
+    // ── Auth (social + email/password) ──────────────────────────────────────
+    if (pathname === '/auth/session' || pathname === '/auth/signout' || pathname.startsWith('/auth/email/') || /^\/auth\/[^/]+\/(start|callback)$/.test(pathname)) {
+      const authResponse = await handleAuthRequest(request, env, ctx, cors);
+      if (authResponse) return authResponse;
+    }
 
     // ── Health ────────────────────────────────────────────────────────────
     if (pathname === '/health') {

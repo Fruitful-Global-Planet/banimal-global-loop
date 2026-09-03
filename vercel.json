@@ -8,7 +8,7 @@
       "destination": "/returns-refund-policy.html"
     },
     {
-      "source": "/((?!api|bib|assets|returns-refund-policy\\.html|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
+      "source": "/((?!api|auth|bib|assets|returns-refund-policy\\.html|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
       "destination": "/index.html"
     }
   ],
