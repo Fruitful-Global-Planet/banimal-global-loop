@@ -4,7 +4,7 @@ import Footer from '@/components/Footer'
 import BobGoDelivery from '@/components/BobGoDelivery'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAuth } from '@/contexts/AuthContext'
-import SocialAuthModal from '@/components/SocialAuthModal'
+import AuthModal from '@/components/AuthModal'
 
 const ORDER_TOTAL = 578
 const TAX_RATE = 0.15
@@ -20,7 +20,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      {showAuthModal && <SocialAuthModal onClose={closeAuth} />}
+      {showAuthModal && <AuthModal onClose={closeAuth} />}
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24">
         <h1 className="font-serif text-3xl text-bark-800 mb-12">Checkout</h1>
