@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
+import BasketBoost from '@/components/BasketBoost'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -17,10 +18,16 @@ const FEATURED: Product[] = [
 
 export default function Home() {
   const [cart, setCart] = useState<Product[]>([])
+  const [basketOpen, setBasketOpen] = useState(false)
+  const [lastAdded, setLastAdded] = useState<Product | null>(null)
   const { getHotItems, getColdItems } = useAnalytics()
   const { openAuth, user } = useAuth()
 
-  const addToCart = (p: Product) => setCart((prev) => [...prev, p])
+  const addToCart = (p: Product) => {
+    setCart((prev) => [...prev, p])
+    setLastAdded(p)
+    setBasketOpen(true)
+  }
 
   const hotIds = getHotItems()
   const coldIds = getColdItems(FEATURED.map((p) => p.id))
@@ -34,6 +41,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Navbar cartCount={cart.length} />
+      <BasketBoost open={basketOpen} items={cart} catalog={FEATURED} lastAdded={lastAdded} onAdd={addToCart} onClose={() => setBasketOpen(false)} />
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center pt-14">
