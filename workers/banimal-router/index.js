@@ -1,11 +1,18 @@
 /**
  * Banimal Router v5 — Cloudflare Worker
  * banimal.co.za/api/* + banimal.co.za/webhooks/* + banimal.co.za/port/5000/*
+ * + banimal.co.za/auth/* (see lib/oauth.js)
  * Payments: Paystack + CapitecPay
  */
 
+import { handleAuthRequest } from './lib/oauth.js';
+
 async function verifyHmac(body, signature, secret) {
-  if (!secret || !signature) return true;
+  // Fail closed: a webhook with no signature, or arriving while no secret is
+  // configured, must be rejected — not treated as pre-verified. The previous
+  // `return true` here meant anyone could POST a fake "payment successful"
+  // webhook with no signature header and have it processed as real.
+  if (!secret || !signature) return false;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-512' }, false, ['verify']
@@ -43,6 +50,12 @@ export default {
     };
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
+
+    // ── Auth (social + email/password) ──────────────────────────────────────
+    if (pathname === '/auth/session' || pathname === '/auth/signout' || pathname.startsWith('/auth/email/') || /^\/auth\/[^/]+\/(start|callback)$/.test(pathname)) {
+      const authResponse = await handleAuthRequest(request, env, ctx, cors);
+      if (authResponse) return authResponse;
+    }
 
     // ── Health ────────────────────────────────────────────────────────────
     if (pathname === '/health') {
@@ -306,6 +319,75 @@ export default {
     }
 
     // ── Delivery rates ────────────────────────────────────────────────────
+    // ── Shipping rates (called by the live checkout) ──────────────────────
+    // Front-end POSTs { address, city, postal, province, country, itemCount,
+    // cartValueZar } and expects { rates: [{ id, name, amountZar, courier,
+    // estimatedDays }] }. Free-shipping rule: South Africa free at R500+,
+    // International free above R1500 (R1500 and below pays).
+    if (pathname === '/api/shipping/rates' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch {}
+
+      const postal = String(body.postal || body.toPostalCode || '').trim();
+      const country = String(body.country || '').trim();
+      const cartValueZar = Number(body.cartValueZar ?? body.orderValueZAR ?? 0) || 0;
+
+      const c = country.toLowerCase();
+      const isZA = c === '' || c === 'country' || c === 'za' || c === 'rsa'
+        || c.includes('south africa') || /^\d{4}$/.test(postal);
+
+      const FREE_THRESHOLD = isZA ? 500 : 1500;
+      const free = isZA ? cartValueZar >= FREE_THRESHOLD : cartValueZar > FREE_THRESHOLD;
+
+      // Live BobGo rates for domestic SA orders with a valid 4-digit postal.
+      if (env.BOBGO_API_KEY && isZA && /^\d{4}$/.test(postal)) {
+        try {
+          const bobgoResp = await fetch('https://api.bobgo.co.za/2010-10-01/rates', {
+            method: 'POST',
+            headers: { 'Authorization': `Basic ${btoa(env.BOBGO_API_KEY + ':')}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to_address: { code: postal, country: 'ZA' },
+              from_address: { code: env.BOBGO_FROM_POSTAL || '0044', country: 'ZA' },
+              parcels: [{ weight: 1, length: 30, width: 20, height: 10 }],
+            }),
+          });
+          if (bobgoResp.ok) {
+            const data = await bobgoResp.json();
+            const bobgoRates = data.rates || [];
+            if (bobgoRates.length > 0) {
+              const prices = bobgoRates.map(x => Math.round(x.rate || x.price || 0));
+              const cheapest = Math.min(...prices);
+              const rates = bobgoRates.map((r, i) => {
+                const realPrice = Math.round(r.rate || r.price || 0);
+                return {
+                  id: r.service_level_code || r.service || `bobgo-${i}`,
+                  name: r.service_level_name || r.service || 'Delivery',
+                  amountZar: free && realPrice === cheapest ? 0 : realPrice,
+                  courier: r.courier_name || 'BobGo',
+                  estimatedDays: r.transit_days ? `${r.transit_days} business days` : 'See tracking',
+                };
+              });
+              return Response.json({ rates, source: 'bobgo', free, free_from: FREE_THRESHOLD, country: isZA ? 'ZA' : 'INTL' }, { headers: cors });
+            }
+          }
+        } catch {}
+      }
+
+      // Country-aware fallback. Standard becomes free once the cart qualifies;
+      // Express is a paid upgrade.
+      const base = isZA
+        ? { standard: 85,  express: 145, stdDays: '3–5 business days', expDays: '1–2 business days' }
+        : { standard: 350, express: 650, stdDays: '7–14 business days', expDays: '3–7 business days' };
+
+      return Response.json({
+        rates: [
+          { id: 'standard', name: 'Standard Delivery', amountZar: free ? 0 : base.standard, courier: 'BobGo', estimatedDays: base.stdDays },
+          { id: 'express',  name: 'Express Delivery',  amountZar: base.express, courier: 'BobGo', estimatedDays: base.expDays },
+        ],
+        source: 'fallback', free, free_from: FREE_THRESHOLD, country: isZA ? 'ZA' : 'INTL',
+      }, { headers: cors });
+    }
+
     if (pathname === '/api/delivery/rates' && request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch {}

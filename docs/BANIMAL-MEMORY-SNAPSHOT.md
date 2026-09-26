@@ -1,6 +1,6 @@
 # 🧠 Banimal Memory Snapshot
 
-Last updated: 2026-06-28 15:12 SAST
+Last updated: 2026-09-03 SAST
 Repository: Fruitful-Global-Planet / banimal-global-loop
 
 ---
@@ -66,6 +66,16 @@ Update the timestamp and sections whenever assumptions change.
 - Compatibility: `compatibility_date: 2024-09-23`, `nodejs_compat`
 - Env vars: `PAYSTACK_SECRET_KEY`, `CAPITECPAY_SECRET`, `BOBGO_API_KEY`, `BOBGO_FROM_POSTAL=0044`, `EXCHANGE_RATE_API_KEY`, `RESEND_API_KEY`, `FAA_ETH_ADDRESS`, `FAA_BTC_ADDRESS`, `FAA_USDT_ADDRESS`, `FAA_XRP_ADDRESS`
 
+### Social + Email Auth (issue #11, Tier 1)
+- Real Authorization Code (+ PKCE where the provider supports it) OAuth for **Google, Facebook, Apple, GitHub, Microsoft, X** — plus email/password with PBKDF2-SHA256 hashing. No third-party auth SDK; everything runs in `workers/banimal-router/lib/oauth.js`.
+- Auth is entirely opt-in — guest browsing, cart, and checkout never require it. See `src/contexts/AuthContext.tsx`, `src/components/AuthModal.tsx`.
+- No credentials are configured for **any** provider yet — every `/auth/{provider}/start` soft-fails to `/?auth=error&reason=not_configured` until real client ID/secret pairs are added. Nothing here can sign a real user in until that happens.
+- Sessions live in the existing `BANIMAL_KV` namespace (`session:*` keys, 30-day TTL) — deliberately not a new `BANIMAL_AUTH_KV`, since provisioning a new KV namespace needs live Cloudflare account access this session didn't have. Email/password accounts live in the same namespace under `user:email:*`.
+- Routes: `banimal.co.za/auth/*` (added to `wrangler.toml` — this Worker binding didn't cover `/auth/*` before, so those requests used to fall through to the static Vercel site).
+- Env vars needed per provider (none set yet — see `wrangler.toml`'s comment block for where each one comes from): `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET`, `APPLE_CLIENT_ID` / `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY`, `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (pushed from GitHub Actions secrets named `GH_OAUTH_CLIENT_ID` / `GH_OAUTH_CLIENT_SECRET` — GitHub rejects a repo secret literally named `GITHUB_*`), `MICROSOFT_CLIENT_ID` / `MICROSOFT_CLIENT_SECRET`, `TWITTER_CLIENT_ID` / `TWITTER_CLIENT_SECRET`.
+- Redirect URIs to register with each provider: `https://www.banimal.co.za/auth/{provider}/callback` (Apple additionally needs `response_mode=form_post` support, which the callback already handles).
+- Tier 2 providers from the original issue (Instagram, TikTok, LinkedIn, Snapchat, Discord, Twitch) are not built — deliberately scoped out of this first pass. Adding one means a new entry in the `PROVIDERS` registry in `lib/oauth.js` plus a button in `AuthModal.tsx`; the routing, session, and cookie plumbing is already generic.
+
 ---
 
 ## 3. Product shipping assumptions (Banimal SKUs)
@@ -98,6 +108,7 @@ When a session closes or an assistant loses context, use this exact sequence:
 4. Open `paystack/webhook-handler.js` to see Zoho CRM + Invoice integration.
 4. Open BobGo / logistics-related files (search `bobgo`, `delivery`, `shipping`) to see latest shipping logic.
 4. Open `src/pages/Checkout.tsx` to see checkout flow.
+4. Open `workers/banimal-router/lib/oauth.js` + `src/contexts/AuthContext.tsx` to see the social/email auth flow.
 5. Resume from last unfinished task.
 
 ---
@@ -119,5 +130,6 @@ When a session closes or an assistant loses context, use this exact sequence:
 ## 5. Change log
 
 - **2026-06-28 15:12 SAST** — Snapshot created after Paystack profile login, Zoho Mail login, Zoho API Console, BobGo API keys. Banimal product constraints documented: 30m × 15cm × 5cm, max 250g. Integration focus: Paystack, BobGo.
+- **2026-09-03 SAST** — Implemented issue #11 (social + email auth), Tier 1 providers, real OAuth code end to end but no live credentials configured for any provider yet. See "Social + Email Auth" above.
 
 (Append one bullet per future change: date, what changed, and which files were touched.)

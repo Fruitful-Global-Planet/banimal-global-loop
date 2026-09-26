@@ -5,7 +5,7 @@ import BobGoDelivery from '@/components/BobGoDelivery'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
-import SocialAuthModal from '@/components/SocialAuthModal'
+import AuthModal from '@/components/AuthModal'
 
 const TAX_RATE = 0.15
 const ORDERS_API = (import.meta.env.VITE_ORDERS_API_URL as string) || '/api/orders'
@@ -60,7 +60,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      {showAuthModal && <SocialAuthModal onClose={closeAuth} />}
+      {showAuthModal && <AuthModal onClose={closeAuth} />}
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24">
         <h1 className="font-serif text-3xl text-bark-800 mb-12">Checkout</h1>
@@ -130,6 +130,21 @@ export default function Checkout() {
 
               <CharitableGiving orderTotalZAR={total} />
 
+              <div className="grid gap-3 rounded-2xl border border-cream-200 bg-white/40 p-4 text-sm">
+                <div>
+                  <p className="font-medium text-bark-800">Secure Paystack checkout</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">Card, Apple Pay, and EFT options stay inside the proven Paystack flow.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-bark-800">Delivery-ready details</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">Your selected delivery option and email stay connected for fulfilment follow-up.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-bark-800">Purpose built in</p>
+                  <p className="text-xs leading-relaxed text-bark-700/60">15.01% of every order flows into Banimal's giving loop.</p>
+                </div>
+              </div>
+
               {payError && <p className="text-xs text-red-600">{payError}</p>}
 
               <button
@@ -140,8 +155,8 @@ export default function Checkout() {
                 {paying ? 'Redirecting to Paystack…' : 'Pay with Paystack'}
               </button>
 
-              <p className="text-xs text-center text-bark-700/40 mt-2">
-                Secure checkout powered by Paystack
+              <p className="text-xs text-center leading-relaxed text-bark-700/50 mt-2">
+                No payment details are stored by Banimal. Keep your Paystack reference for support.
               </p>
             </div>
           </div>

@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Heart } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
+import BasketBoost from '@/components/BasketBoost'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
@@ -16,9 +18,17 @@ const FEATURED: Product[] = [
 ]
 
 export default function Home() {
-  const { addItem } = useCart()
+  const [basketOpen, setBasketOpen] = useState(false)
+  const [lastAdded, setLastAdded] = useState<Product | null>(null)
+  const { items, addItem } = useCart()
   const { getHotItems, getColdItems } = useAnalytics()
   const { openAuth, user } = useAuth()
+
+  const addToCart = (p: Product) => {
+    addItem(p)
+    setLastAdded(p)
+    setBasketOpen(true)
+  }
 
   const hotIds = getHotItems()
   const coldIds = getColdItems(FEATURED.map((p) => p.id))
@@ -32,6 +42,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Navbar />
+      <BasketBoost open={basketOpen} items={items} catalog={FEATURED} lastAdded={lastAdded} onAdd={addToCart} onClose={() => setBasketOpen(false)} />
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center pt-14">
@@ -85,7 +96,7 @@ export default function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {FEATURED.map((p) => (
-            <ProductCard key={p.id} product={p} onAdd={addItem} badge={getBadge(p.id)} />
+            <ProductCard key={p.id} product={p} onAdd={addToCart} badge={getBadge(p.id)} />
           ))}
         </div>
 

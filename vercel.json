@@ -3,7 +3,11 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!api|bib|assets|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
+      "source": "/returns-refund-policy",
+      "destination": "/returns-refund-policy.html"
+    },
+    {
+      "source": "/((?!api|auth|bib|assets|returns-refund-policy\\.html|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|og-image\\.png|favicon|icon|apple-touch).*)",
       "destination": "/index.html"
     }
   ],

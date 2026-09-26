@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ProductCard, { type Product } from '@/components/ProductCard'
 import CharitableGiving from '@/components/CharitableGiving'
+import BasketBoost from '@/components/BasketBoost'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
 import { useCart } from '@/contexts/CartContext'
 
@@ -32,6 +33,8 @@ const CATS = ['All', 'Babygrow', 'Bib', 'Print']
 export default function Shop() {
   const [cat, setCat] = useState('All')
   const { items, addItem, subtotal } = useCart()
+  const [basketOpen, setBasketOpen] = useState(false)
+  const [lastAdded, setLastAdded] = useState<Product | null>(null)
   const { getHotItems, getColdItems } = useAnalytics()
 
   const filtered = cat === 'All' ? ALL_PRODUCTS : ALL_PRODUCTS.filter((p) => p.category === cat)
@@ -44,9 +47,16 @@ export default function Shop() {
     return undefined
   }
 
+  const addToCart = (product: Product) => {
+    addItem(product)
+    setLastAdded(product)
+    setBasketOpen(true)
+  }
+
   return (
     <div className="min-h-screen">
       <Navbar />
+      <BasketBoost open={basketOpen} items={items} catalog={ALL_PRODUCTS} lastAdded={lastAdded} onAdd={addToCart} onClose={() => setBasketOpen(false)} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24">
         <div className="mb-12">
@@ -72,7 +82,7 @@ export default function Shop() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} onAdd={addItem} badge={getBadge(p.id)} />
+            <ProductCard key={p.id} product={p} onAdd={addToCart} badge={getBadge(p.id)} />
           ))}
         </div>
 

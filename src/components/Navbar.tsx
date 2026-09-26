@@ -1,17 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingBag, Menu, X, User } from 'lucide-react'
+import { ShoppingBag, Menu, X, User, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
-import SocialAuthModal from './SocialAuthModal'
 import ThemeToggle from './ThemeToggle'
+import AuthModal from './AuthModal'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
   const { user, showAuthModal, openAuth, closeAuth, signOut } = useAuth()
   const { items } = useCart()
   const cartCount = items.length
   const navigate = useNavigate()
+  const accountRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
 
   return (
     <>
@@ -30,17 +40,56 @@ export default function Navbar() {
 
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <button
-                onClick={user ? signOut : openAuth}
-                className="p-2 rounded-full hover:bg-cream-200 transition-colors"
-                aria-label="Account"
-              >
-                {user ? (
-                  <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full object-cover" />
-                ) : (
-                  <User className="w-5 h-5" />
+              <div className="relative" ref={accountRef}>
+                <button
+                  onClick={() => (user ? setAccountOpen((v) => !v) : openAuth())}
+                  className="flex items-center gap-1 p-2 rounded-full hover:bg-cream-200 transition-colors"
+                  aria-label="Account"
+                  aria-expanded={user ? accountOpen : undefined}
+                >
+                  {user ? (
+                    user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full object-cover" />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-bark-800 text-cream-100 text-[11px] font-medium flex items-center justify-center">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    )
+                  ) : (
+                    <User className="w-5 h-5" />
+                  )}
+                  {user && <ChevronDown className="w-3.5 h-3.5 text-bark-700/60" />}
+                </button>
+
+                {user && accountOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl border border-cream-200 shadow-xl overflow-hidden py-1">
+                    <div className="px-4 py-3 border-b border-cream-100">
+                      <p className="text-sm font-medium text-bark-800 truncate">{user.name}</p>
+                      {user.email && <p className="text-xs text-bark-700/60 truncate">{user.email}</p>}
+                    </div>
+                    <button
+                      disabled
+                      title="Coming soon"
+                      className="w-full text-left px-4 py-2 text-sm text-bark-700/40 cursor-not-allowed"
+                    >
+                      My Orders
+                    </button>
+                    <button
+                      disabled
+                      title="Coming soon"
+                      className="w-full text-left px-4 py-2 text-sm text-bark-700/40 cursor-not-allowed"
+                    >
+                      Wishlist
+                    </button>
+                    <button
+                      onClick={() => { setAccountOpen(false); signOut() }}
+                      className="w-full text-left px-4 py-2 text-sm text-bark-800 hover:bg-cream-100"
+                    >
+                      Sign out
+                    </button>
+                  </div>
                 )}
-              </button>
+              </div>
               <button
                 onClick={() => navigate('/checkout')}
                 className="relative p-2 rounded-full hover:bg-cream-200 transition-colors"
@@ -69,7 +118,7 @@ export default function Navbar() {
         )}
       </nav>
 
-      {showAuthModal && <SocialAuthModal onClose={closeAuth} />}
+      {showAuthModal && <AuthModal onClose={closeAuth} />}
     </>
   )
 }
