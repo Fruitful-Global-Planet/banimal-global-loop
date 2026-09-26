@@ -392,27 +392,35 @@ export default {
       let body = {};
       try { body = await request.json(); } catch {}
       const { toPostalCode, orderValueZAR = 0 } = body;
+      const free = Number(orderValueZAR) >= 500;
+      const bobgoBase = env.BOBGO_ENV === 'sandbox' ? 'https://api.sandbox.bobgo.co.za/v2' : 'https://api.bobgo.co.za/v2';
 
       if (env.BOBGO_API_KEY && toPostalCode) {
         try {
-          const bobgoResp = await fetch('https://api.bobgo.co.za/2010-10-01/rates', {
+          const bobgoResp = await fetch(`${bobgoBase}/rates`, {
             method: 'POST',
-            headers: { 'Authorization': `Basic ${btoa(env.BOBGO_API_KEY + ':')}`, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${env.BOBGO_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              to_address: { code: toPostalCode, country: 'ZA' },
-              from_address: { code: env.BOBGO_FROM_POSTAL || '0044', country: 'ZA' },
-              parcels: [{ weight: 1, length: 30, width: 20, height: 10 }],
+              collection_address: { local_area: env.BOBGO_FROM_POSTAL || '0044', country: 'ZA' },
+              delivery_address: { local_area: toPostalCode, country: 'ZA' },
+              parcels: [{ parcel_description: 'Banimal order', submitted_length_cm: 30, submitted_width_cm: 20, submitted_height_cm: 10, submitted_weight_kg: 1 }],
+              declared_value: Number(orderValueZAR) || undefined,
             }),
           });
           if (bobgoResp.ok) {
             const data = await bobgoResp.json();
-            const rates = (data.rates||[]).map(r => ({ service: r.service_level_name||r.service, price: Math.round(r.rate||r.price||0), days: r.transit_days ? `${r.transit_days} business days` : 'See tracking' }));
-            if (rates.length > 0) return Response.json({ rates, source: 'bobgo' }, { headers: cors });
+            const rates = (data.rates||[]).map(r => ({
+              service: r.service_level_name||r.service,
+              // Live Bob Go quotes still respect the R500 free-delivery threshold —
+              // previously this branch returned early and skipped that check entirely.
+              price: free ? 0 : Math.round(r.rate||r.price||0),
+              days: r.transit_days ? `${r.transit_days} business days` : 'See tracking',
+            }));
+            if (rates.length > 0) return Response.json({ rates, source: 'bobgo', free_from: 500 }, { headers: cors });
           }
         } catch {}
       }
 
-      const free = Number(orderValueZAR) >= 500;
       return Response.json({
         rates: [
           { service: 'Standard Delivery', price: free ? 0 : 85, days: '3–5 business days' },
@@ -445,38 +453,6 @@ export default {
     // ── Transfer approval ─────────────────────────────────────────────────
     if (pathname === '/webhooks/paystack/transfer-approval' && request.method === 'POST') {
       return Response.json({ status: true }, { headers: cors });
-    }
-
-
-    // ── Bundle patch intercept ────────────────────────────────────────────
-    // Vercel deploy webhook stalled; serve patched bundle directly so
-    // checkout redirects to Paystack instead of firing a fake test payment.
-    if (pathname === '/assets/index-y5YmkyAX.js' && request.method === 'GET') {
-      // Fetch from origin bypassing CF cache
-      const originResp = await fetch(request, { cf: { cacheEverything: false, cacheTtl: 0 } });
-      let js = await originResp.text();
-
-      // Patch 1: z() — return full JSON response (not just .reference)
-      js = js.replace(
-        '})).json()).reference}catch',
-        '})).json())}catch'
-      );
-
-      // Patch 2: Q() — replace fake test payment with real Paystack redirect
-      js = js.replace(
-        'V&&W(V);return}await u4();{p({title:"Test payment",description:"Simulated Paystack TEST charge (ZAR)."});const V=await z("paid");V&&W(V);return}}',
-        'V&&W(V.reference);return}{const V=await z("pending");if(V&&V.authorization_url){window.location.href=V.authorization_url}else if(V){W(V.reference)}else{S(!1)}return}}'
-      );
-
-      const patched = js.includes('authorization_url');
-      return new Response(js, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/javascript; charset=utf-8',
-          'Cache-Control': 'no-store',
-          'X-Bundle-Patched': patched ? 'true' : 'patch-failed',
-        },
-      });
     }
 
     return fetch(request);

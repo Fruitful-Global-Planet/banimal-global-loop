@@ -1,6 +1,5 @@
 {
-  "buildCommand": "echo 'pre-built Banimal2 static site'",
-  "installCommand": "true",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {

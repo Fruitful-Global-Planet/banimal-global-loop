@@ -4,18 +4,58 @@ import Footer from '@/components/Footer'
 import BobGoDelivery from '@/components/BobGoDelivery'
 import CharitableGiving from '@/components/CharitableGiving'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 import AuthModal from '@/components/AuthModal'
 
-const ORDER_TOTAL = 578
 const TAX_RATE = 0.15
+const ORDERS_API = (import.meta.env.VITE_ORDERS_API_URL as string) || '/api/orders'
 
 export default function Checkout() {
   const { user, showAuthModal, openAuth, closeAuth } = useAuth()
+  const { items, subtotal } = useCart()
   const [delivery, setDelivery] = useState<{ service: string; price: number } | null>(null)
+  const [guestEmail, setGuestEmail] = useState('')
+  const [paying, setPaying] = useState(false)
+  const [payError, setPayError] = useState('')
 
-  const subtotal = ORDER_TOTAL
   const deliveryFee = delivery?.price || 0
   const total = subtotal + deliveryFee
+  const email = user?.email || guestEmail
+
+  const payWithPaystack = async () => {
+    setPayError('')
+    if (!email) {
+      setPayError('Enter your email to continue.')
+      return
+    }
+    if (items.length === 0) {
+      setPayError('Your cart is empty.')
+      return
+    }
+    setPaying(true)
+    try {
+      const resp = await fetch(ORDERS_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: user?.name || '',
+          email,
+          totalZar: total,
+          itemsJson: JSON.stringify(items.map((p) => ({ id: p.id, name: p.name, price: p.price }))),
+        }),
+      })
+      const data = await resp.json() as { status?: boolean; authorization_url?: string; error?: string }
+      if (data.status && data.authorization_url) {
+        window.location.href = data.authorization_url
+      } else {
+        setPayError(data.error || 'Could not start payment. Please try again.')
+      }
+    } catch {
+      setPayError('Could not reach payment provider. Please try again.')
+    } finally {
+      setPaying(false)
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -29,12 +69,24 @@ export default function Checkout() {
           {/* Left: delivery + auth */}
           <div className="space-y-8">
             {!user && (
-              <div className="p-6 bg-cream-50 rounded-2xl border border-cream-300">
-                <h3 className="font-serif text-lg text-bark-800 mb-2">Sign in for faster checkout</h3>
-                <p className="text-sm text-bark-700/60 mb-4">Save your details and track your orders.</p>
-                <button onClick={openAuth} className="btn-primary rounded-xl text-sm">
-                  Sign in
-                </button>
+              <div className="p-6 bg-cream-50 rounded-2xl border border-cream-300 space-y-4">
+                <div>
+                  <h3 className="font-serif text-lg text-bark-800 mb-2">Sign in for faster checkout</h3>
+                  <p className="text-sm text-bark-700/60 mb-4">Save your details and track your orders.</p>
+                  <button onClick={openAuth} className="btn-primary rounded-xl text-sm">
+                    Sign in
+                  </button>
+                </div>
+                <div>
+                  <label className="text-xs text-bark-700/60 mb-1 block">Or check out as a guest — email</label>
+                  <input
+                    type="email"
+                    className="w-full border border-cream-300 rounded-xl px-3 py-2.5 text-sm bg-cream-50 focus:outline-none focus:border-bark-700"
+                    placeholder="you@example.com"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                  />
+                </div>
               </div>
             )}
 
@@ -48,7 +100,7 @@ export default function Checkout() {
               </div>
             )}
 
-            <BobGoDelivery orderValueZAR={ORDER_TOTAL} onSelect={setDelivery} />
+            <BobGoDelivery orderValueZAR={subtotal} onSelect={setDelivery} />
           </div>
 
           {/* Right: order summary */}
@@ -93,12 +145,15 @@ export default function Checkout() {
                 </div>
               </div>
 
-              <a
-                href={`https://banimal.co.za/checkout?source=faa&total=${total}&delivery=${delivery?.service || ''}`}
-                className="btn-primary w-full justify-center rounded-xl mt-2 text-sm"
+              {payError && <p className="text-xs text-red-600">{payError}</p>}
+
+              <button
+                onClick={payWithPaystack}
+                disabled={paying || items.length === 0}
+                className="btn-primary w-full justify-center rounded-xl mt-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Pay securely with Paystack
-              </a>
+                {paying ? 'Redirecting to Paystack…' : 'Pay with Paystack'}
+              </button>
 
               <p className="text-xs text-center leading-relaxed text-bark-700/50 mt-2">
                 No payment details are stored by Banimal. Keep your Paystack reference for support.

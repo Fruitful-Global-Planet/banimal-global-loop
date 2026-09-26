@@ -12,7 +12,21 @@ interface Props {
   onSelect: (rate: Rate) => void
 }
 
-const API = (import.meta.env.VITE_DELIVERY_API_URL as string) || 'https://banimal.co.za/api/delivery'
+// Same-origin by default. The previous hardcoded apex-domain URL
+// (https://banimal.co.za/api/delivery) made this a cross-origin request from
+// www.banimal.co.za, which the worker isn't routed for — the fetch would hang
+// or fail instead of returning rates.
+const API = (import.meta.env.VITE_DELIVERY_API_URL as string) || '/api/delivery'
+const FETCH_TIMEOUT_MS = 8000
+const FREE_DELIVERY_THRESHOLD_ZAR = 500
+
+function fallbackRates(orderValueZAR: number): Rate[] {
+  const free = orderValueZAR >= FREE_DELIVERY_THRESHOLD_ZAR
+  return [
+    { service: 'Standard Delivery', price: free ? 0 : 85, days: '3–5 business days' },
+    { service: 'Express Delivery', price: free ? 60 : 145, days: '1–2 business days' },
+  ]
+}
 
 export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
   const [address, setAddress] = useState('')
@@ -53,20 +67,21 @@ export default function BobGoDelivery({ orderValueZAR, onSelect }: Props) {
   const getRates = async () => {
     if (!postalCode) return
     setLoading(true)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
       const resp = await fetch(`${API}/rates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toPostalCode: postalCode, orderValueZAR }),
+        signal: controller.signal,
       })
       const data = await resp.json() as { rates: Rate[] }
-      setRates(data.rates || [])
+      setRates(data.rates && data.rates.length > 0 ? data.rates : fallbackRates(orderValueZAR))
     } catch {
-      setRates([
-        { service: 'Standard Delivery', price: 85, days: '3–5 business days' },
-        { service: 'Express Delivery', price: 145, days: '1–2 business days' },
-      ])
+      setRates(fallbackRates(orderValueZAR))
     } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }

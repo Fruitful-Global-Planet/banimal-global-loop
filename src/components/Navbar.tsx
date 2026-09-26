@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingBag, Menu, X, User, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
+import ThemeToggle from './ThemeToggle'
 import AuthModal from './AuthModal'
 
-interface Props {
-  cartCount?: number
-}
-
-export default function Navbar({ cartCount = 0 }: Props) {
+export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const { user, showAuthModal, openAuth, closeAuth, signOut } = useAuth()
+  const { items } = useCart()
+  const cartCount = items.length
   const navigate = useNavigate()
   const accountRef = useRef<HTMLDivElement>(null)
 
@@ -39,6 +39,7 @@ export default function Navbar({ cartCount = 0 }: Props) {
             </div>
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <div className="relative" ref={accountRef}>
                 <button
                   onClick={() => (user ? setAccountOpen((v) => !v) : openAuth())}

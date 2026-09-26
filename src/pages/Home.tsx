@@ -8,6 +8,7 @@ import CharitableGiving from '@/components/CharitableGiving'
 import BasketBoost from '@/components/BasketBoost'
 import { useAnalytics } from '@/contexts/AnalyticsContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 
 const FEATURED: Product[] = [
   { id: 'BT001', name: 'Classic White Babygrow 0–3m', price: 289, image: 'https://banimal.co.za/assets/BT001-BYDvu1g2.png', category: 'Babygrow', sizes: ['0–3m'], isNew: false },
@@ -17,14 +18,14 @@ const FEATURED: Product[] = [
 ]
 
 export default function Home() {
-  const [cart, setCart] = useState<Product[]>([])
   const [basketOpen, setBasketOpen] = useState(false)
   const [lastAdded, setLastAdded] = useState<Product | null>(null)
+  const { items, addItem } = useCart()
   const { getHotItems, getColdItems } = useAnalytics()
   const { openAuth, user } = useAuth()
 
   const addToCart = (p: Product) => {
-    setCart((prev) => [...prev, p])
+    addItem(p)
     setLastAdded(p)
     setBasketOpen(true)
   }
@@ -40,8 +41,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <Navbar cartCount={cart.length} />
-      <BasketBoost open={basketOpen} items={cart} catalog={FEATURED} lastAdded={lastAdded} onAdd={addToCart} onClose={() => setBasketOpen(false)} />
+      <Navbar />
+      <BasketBoost open={basketOpen} items={items} catalog={FEATURED} lastAdded={lastAdded} onAdd={addToCart} onClose={() => setBasketOpen(false)} />
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center pt-14">

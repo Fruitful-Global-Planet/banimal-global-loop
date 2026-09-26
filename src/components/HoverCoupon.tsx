@@ -14,10 +14,7 @@ export default function HoverCoupon() {
   useEffect(() => {
     if (sessionStorage.getItem(COUPON_KEY)) return
 
-    let enteredAt = 0
-
     const onEnter = () => {
-      enteredAt = Date.now()
       timerRef.current = setTimeout(() => {
         if (!shownRef.current) {
           shownRef.current = true
@@ -29,7 +26,6 @@ export default function HoverCoupon() {
 
     const onLeave = () => {
       if (timerRef.current) clearTimeout(timerRef.current)
-      enteredAt = 0
     }
 
     document.addEventListener('mouseenter', onEnter)
